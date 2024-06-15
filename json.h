@@ -3,10 +3,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-struct json_string {
-	char *str;
-};
-
 struct json_array {
 	struct json_node *values;
 	size_t value_count;
@@ -29,7 +25,7 @@ struct json_node {
 		JSON_NODE_OBJECT,
 	} type;
 	union {
-		struct json_string string;
+		char *string;
 		struct json_array array;
 		struct json_object object;
 	} data;

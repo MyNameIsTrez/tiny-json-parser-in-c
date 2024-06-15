@@ -44,6 +44,119 @@ static void ok_array(void) {
 	assert(node.data.array.value_count == 0);
 }
 
+static void ok_grug(void) {
+	struct json_node node;
+	OK_PARSE("./tests_ok/grug.json", &node);
+
+	struct json_object foo_fn;
+	struct json_object bar_fn;
+	struct json_array fn_array;
+	struct json_array arguments;
+	struct json_field *field;
+
+	assert(node.type == JSON_NODE_ARRAY);
+	fn_array = node.data.array;
+	assert(fn_array.value_count == 2);
+
+	// foo fn
+
+	assert(fn_array.values[0].type == JSON_NODE_OBJECT);
+	foo_fn = fn_array.values[0].data.object;
+	assert(foo_fn.field_count == 4);
+
+	field = foo_fn.fields;
+
+	assert(strcmp(field->key, "name") == 0);
+	assert(field->value->type == JSON_NODE_STRING);
+	assert(strcmp(field->value->data.string, "foo") == 0);
+	field++;
+
+	assert(strcmp(field->key, "description") == 0);
+	assert(field->value->type == JSON_NODE_STRING);
+	assert(strcmp(field->value->data.string, "deez") == 0);
+	field++;
+
+	assert(strcmp(field->key, "return_type") == 0);
+	assert(field->value->type == JSON_NODE_STRING);
+	assert(strcmp(field->value->data.string, "i32") == 0);
+	field++;
+
+	assert(strcmp(field->key, "arguments") == 0);
+	assert(field->value->type == JSON_NODE_ARRAY);
+	arguments = field->value->data.array;
+	assert(arguments.value_count == 2);
+
+	assert(arguments.values[0].type == JSON_NODE_OBJECT);
+	assert(arguments.values[0].data.object.field_count == 2);
+	field = arguments.values[0].data.object.fields;
+
+	assert(strcmp(field->key, "name") == 0);
+	assert(field->value->type == JSON_NODE_STRING);
+	assert(strcmp(field->value->data.string, "a") == 0);
+	field++;
+
+	assert(strcmp(field->key, "type") == 0);
+	assert(field->value->type == JSON_NODE_STRING);
+	assert(strcmp(field->value->data.string, "i64") == 0);
+	field++;
+
+	assert(arguments.values[1].type == JSON_NODE_OBJECT);
+	assert(arguments.values[1].data.object.field_count == 2);
+	field = arguments.values[1].data.object.fields;
+
+	assert(strcmp(field->key, "name") == 0);
+	assert(field->value->type == JSON_NODE_STRING);
+	assert(strcmp(field->value->data.string, "b") == 0);
+	field++;
+
+	assert(strcmp(field->key, "type") == 0);
+	assert(field->value->type == JSON_NODE_STRING);
+	assert(strcmp(field->value->data.string, "i64") == 0);
+	field++;
+
+	// bar fn
+
+	assert(fn_array.values[1].type == JSON_NODE_OBJECT);
+	bar_fn = fn_array.values[1].data.object;
+	assert(bar_fn.field_count == 4);
+
+	field = bar_fn.fields;
+
+	assert(strcmp(field->key, "name") == 0);
+	assert(field->value->type == JSON_NODE_STRING);
+	assert(strcmp(field->value->data.string, "bar") == 0);
+	field++;
+
+	assert(strcmp(field->key, "description") == 0);
+	assert(field->value->type == JSON_NODE_STRING);
+	assert(strcmp(field->value->data.string, "nuts") == 0);
+	field++;
+
+	assert(strcmp(field->key, "return_type") == 0);
+	assert(field->value->type == JSON_NODE_STRING);
+	assert(strcmp(field->value->data.string, "f32") == 0);
+	field++;
+
+	assert(strcmp(field->key, "arguments") == 0);
+	assert(field->value->type == JSON_NODE_ARRAY);
+	arguments = field->value->data.array;
+	assert(arguments.value_count == 1);
+
+	assert(arguments.values[0].type == JSON_NODE_OBJECT);
+	assert(arguments.values[0].data.object.field_count == 2);
+	field = arguments.values[0].data.object.fields;
+
+	assert(strcmp(field->key, "name") == 0);
+	assert(field->value->type == JSON_NODE_STRING);
+	assert(strcmp(field->value->data.string, "x") == 0);
+	field++;
+
+	assert(strcmp(field->key, "type") == 0);
+	assert(field->value->type == JSON_NODE_STRING);
+	assert(strcmp(field->value->data.string, "i32") == 0);
+	field++;
+}
+
 static void ok_object_foo(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/object_foo.json", &node);
@@ -74,14 +187,14 @@ static void ok_string_foo(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/string_foo.json", &node);
 	assert(node.type == JSON_NODE_STRING);
-	assert(strcmp(node.data.string.str, "\"foo\"") == 0);
+	assert(strcmp(node.data.string, "foo") == 0);
 }
 
 static void ok_string(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/string.json", &node);
 	assert(node.type == JSON_NODE_STRING);
-	assert(strcmp(node.data.string.str, "\"\"") == 0);
+	assert(strcmp(node.data.string, "") == 0);
 }
 
 static void error_failed_to_open_file(void) {
@@ -104,6 +217,7 @@ static void ok_tests(void) {
 	ok_array_in_array();
 	ok_array_within_max_recursion_depth();
 	ok_array();
+	ok_grug();
 	ok_object_foo();
 	ok_object_within_max_recursion_depth();
 	ok_object();

@@ -1,0 +1,28 @@
+[
+	{
+		"name": "foo",
+		"description": "deez",
+		"return_type": "i32",
+		"arguments": [
+			{
+				"name": "a",
+				"type": "i64"
+			},
+			{
+				"name": "b",
+				"type": "i64"
+			}
+		]
+	},
+	{
+		"name": "bar",
+		"description": "nuts",
+		"return_type": "f32",
+		"arguments": [
+			{
+				"name": "x",
+				"type": "i32"
+			}
+		]
+	}
+]

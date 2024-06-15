@@ -273,7 +273,7 @@ static struct json_node parse_string(size_t *i) {
 
 	node.type = JSON_NODE_STRING;
 
-	node.data.string.str = strings + strings_size;
+	node.data.string = strings + strings_size;
 
 	struct token *t = tokens + *i;
 	push_string(t->offset, t->length);
@@ -331,7 +331,7 @@ static void tokenize(void) {
 	while (i < text_size) {
 		if (text[i] == '"') {
 			if (in_string) {
-				push_token(TOKEN_TYPE_STRING, string_start_index, i - string_start_index + 1);
+				push_token(TOKEN_TYPE_STRING, string_start_index + 1, i - string_start_index - 1);
 			} else {
 				string_start_index = i;
 			}
