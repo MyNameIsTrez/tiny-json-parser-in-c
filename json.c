@@ -82,7 +82,7 @@ static struct json_node parse_object(size_t *i) {
 	node.type = JSON_NODE_OBJECT;
 	(*i)++;
 
-	node.data.object.fields_offset = fields_size;
+	node.data.object.fields = fields + fields_size;
 	node.data.object.field_count = 0;
 
 	struct json_node child_nodes[MAX_NODES_PER_STACK_FRAME];
@@ -121,8 +121,8 @@ static struct json_node parse_array(size_t *i) {
 	node.type = JSON_NODE_ARRAY;
 	(*i)++;
 
-	node.data.array.nodes_offset = nodes_size;
-	node.data.array.node_count = 0;
+	node.data.array.values = nodes + nodes_size;
+	node.data.array.value_count = 0;
 
 	struct json_node child_nodes[MAX_NODES_PER_STACK_FRAME];
 
@@ -131,18 +131,18 @@ static struct json_node parse_array(size_t *i) {
 
 		switch (t->type) {
 		case TOKEN_TYPE_STRING:
-			child_nodes[node.data.array.node_count++] = parse_string(i);
+			child_nodes[node.data.array.value_count++] = parse_string(i);
 			break;
 		case TOKEN_TYPE_ARRAY_OPEN:
-			child_nodes[node.data.array.node_count++] = parse_array(i);
+			child_nodes[node.data.array.value_count++] = parse_array(i);
 			break;
 		case TOKEN_TYPE_ARRAY_CLOSE:
-			for (size_t i = 0; i < node.data.array.node_count; i++) {
+			for (size_t i = 0; i < node.data.array.value_count; i++) {
 				push_node(child_nodes[i]);
 			}
 			return node;
 		case TOKEN_TYPE_OBJECT_OPEN:
-			child_nodes[node.data.array.node_count++] = parse_object(i);
+			child_nodes[node.data.array.value_count++] = parse_object(i);
 			break;
 		case TOKEN_TYPE_OBJECT_CLOSE:
 			JSON_ERROR(JSON_ERROR_UNMATCHED_OBJECT_CLOSE);

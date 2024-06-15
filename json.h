@@ -8,18 +8,18 @@ struct json_string {
 };
 
 struct json_array {
-	size_t nodes_offset;
-	size_t node_count;
+	struct json_node *values;
+	size_t value_count;
 };
 
 struct json_object {
-	size_t fields_offset;
+	struct json_field *fields;
 	size_t field_count;
 };
 
 struct json_field {
 	char *key;
-	size_t node_index;
+	struct json_node *value;
 };
 
 struct json_node {
