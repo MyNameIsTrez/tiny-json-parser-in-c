@@ -16,13 +16,10 @@ static size_t text_size;
 
 enum token_type {
 	TOKEN_TYPE_STRING,
-	TOKEN_TYPE_ARRAY,
-	TOKEN_TYPE_OBJECT,
-};
-static char *token_type_strs[] = {
-	[TOKEN_TYPE_STRING] = "string",
-	[TOKEN_TYPE_ARRAY] = "array",
-	[TOKEN_TYPE_OBJECT] = "object",
+	TOKEN_TYPE_ARRAY_OPEN,
+	TOKEN_TYPE_ARRAY_CLOSE,
+	TOKEN_TYPE_OBJECT_OPEN,
+	TOKEN_TYPE_OBJECT_CLOSE,
 };
 
 struct token {
@@ -37,7 +34,7 @@ static void print_tokens() {
 	printf("tokens:\n");
 	for (size_t i = 0; i < tokens_size; i++) {
 		struct token t = tokens[i];
-		printf("%s '%.*s'\n", token_type_strs[t.type], (int)t.length, text + t.offset);
+		printf("'%.*s'\n", (int)t.length, text + t.offset);
 	}
 }
 
@@ -69,6 +66,22 @@ static bool tokenize(void) {
 				string_start_index = i;
 			}
 			in_string = !in_string;
+		} else if (text[i] == '[') {
+			if (push_token(TOKEN_TYPE_ARRAY_OPEN, i, 1)) {
+				return true;
+			}
+		} else if (text[i] == ']') {
+			if (push_token(TOKEN_TYPE_ARRAY_CLOSE, i, 1)) {
+				return true;
+			}
+		} else if (text[i] == '{') {
+			if (push_token(TOKEN_TYPE_OBJECT_OPEN, i, 1)) {
+				return true;
+			}
+		} else if (text[i] == '}') {
+			if (push_token(TOKEN_TYPE_OBJECT_CLOSE, i, 1)) {
+				return true;
+			}
 		}
 		i++;
 	}
