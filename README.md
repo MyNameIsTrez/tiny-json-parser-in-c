@@ -2,9 +2,9 @@
 
 Parses a subset of [JSON](https://en.wikipedia.org/wiki/JSON) in roughly 420 lines of C, where only arrays, objects and strings are handled.
 
-The [JSON spec](https://www.json.org/json-en.html) specifies that the other value types are `number`, `true`, `false` and `null`, but since they can all be stored as a string, I don't consider them important enough for this tiny JSON parser.
+The [JSON spec](https://www.json.org/json-en.html) specifies that the other value types are `number`, `true`, `false` and `null`, but they can all be stored as strings.
 
-The motivation for this program was that my [grug](https://mynameistrez.github.io/2024/02/29/creating-the-perfect-modding-language.html) programming language needs to be able to parse files that have the form of this `tests_ok/grug.json` test:
+The motivation for writing this program was that my tiny [grug](https://mynameistrez.github.io/2024/02/29/creating-the-perfect-modding-language.html) programming language needs to be able to parse files that have the form of this `tests_ok/grug.json` test:
 
 ```json
 [
