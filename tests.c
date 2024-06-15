@@ -16,11 +16,20 @@
 	assert(json_parse(path, NULL) && json_error == error);\
 }
 
+static void ok_array_in_array(void) {
+	struct json_node node;
+	OK_PARSE("./tests_ok/array_in_array.json", &node);
+	assert(node.type == JSON_NODE_ARRAY);
+	assert(node.data.array.value_count == 1);
+	assert(node.data.array.values[0].type == JSON_NODE_ARRAY);
+	assert(node.data.array.values[0].data.array.value_count == 0);
+}
+
 static void ok_array(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/array.json", &node);
 	assert(node.type == JSON_NODE_ARRAY);
-	assert(node.data.array.node_count == 0);
+	assert(node.data.array.value_count == 0);
 }
 
 static void ok_object(void) {
@@ -53,6 +62,7 @@ static void error_failed_to_open_json_file(void) {
 }
 
 static void ok_tests(void) {
+	ok_array_in_array();
 	ok_array();
 	ok_object();
 	ok_string_foo();
