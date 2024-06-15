@@ -7,8 +7,8 @@
 #define MAX_CHARACTERS_IN_JSON_FILE 420420
 #define MAX_TOKENS 420420
 #define MAX_STRINGS_CHARACTERS 420420
-#define MAX_JSON_NODES 420420
-#define MAX_JSON_FIELDS 420420
+#define MAX_NODES 420420
+#define MAX_FIELDS 420420
 
 enum json_error json_error;
 
@@ -31,20 +31,20 @@ struct token {
 static struct token tokens[MAX_TOKENS];
 static size_t tokens_size;
 
-struct json_node nodes[MAX_JSON_NODES];
+struct json_node nodes[MAX_NODES];
 static size_t nodes_size;
 
 static char strings[MAX_STRINGS_CHARACTERS];
 static size_t strings_size;
 
-struct json_field json_fields[MAX_JSON_FIELDS];
-static size_t json_fields_size;
+struct json_field fields[MAX_FIELDS];
+static size_t fields_size;
 
 static bool parse_string(size_t *i);
 static bool parse_array(size_t *i);
 
 static bool reserve_node(void) {
-	if (nodes_size + 1 > MAX_JSON_NODES) {
+	if (nodes_size + 1 > MAX_NODES) {
 		json_error = JSON_ERROR_TOO_MANY_JSON_NODES;
 		return true;
 	}
@@ -70,6 +70,20 @@ static bool parse_array(size_t *i) {
 	if (reserve_node()) {
 		return true;
 	}
+
+	// TODO:
+	// A local array (on the stack) needs to be used to ensure that
+	// all child nodes are placed into the global array contiguously
+	// by pushing them to the local array in the parse functions
+	// This is what grug does in parse_statements()
+	//
+	// There are two ways to get the child node:
+	// 1.
+	// All these parse functions start returning their struct,
+	// instead of returning a bool, by using longjmp() on error
+	// 2.
+	// The child node is obtained with nodes[nodes_size - 1],
+	// after the child node has been fully parsed
 
 	node->data.array.nodes_offset = nodes_size;
 
@@ -278,7 +292,7 @@ static void reset(void) {
 	tokens_size = 0;
 	nodes_size = 0;
 	strings_size = 0;
-	json_fields_size = 0;
+	fields_size = 0;
 }
 
 bool json_parse(char *json_file_path, struct json_node *returned) {
