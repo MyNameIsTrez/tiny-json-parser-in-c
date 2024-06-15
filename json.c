@@ -9,6 +9,7 @@
 #define MAX_STRINGS_CHARACTERS 420420
 #define MAX_NODES 420420
 #define MAX_FIELDS 420420
+#define MAX_NODES_PER_STACK_FRAME 1337
 
 enum json_error json_error;
 
@@ -84,23 +85,28 @@ static bool parse_array(size_t *i) {
 	// 2.
 	// The child node is obtained with nodes[nodes_size - 1],
 	// after the child node has been fully parsed
+	// This will NOT give the right result, since the child function calls
+	// will have already pushed (reserved) the space, making it impossible
+	// for the parent to put all child nodes in one contiguous block
 
 	node->data.array.nodes_offset = nodes_size;
 
 	node->type = JSON_NODE_ARRAY;
 
+	// struct json_node child_nodes[MAX_NODES_PER_STACK_FRAME];
+	// size_t child_nodes_size = 0;
+
 	while (*i < tokens_size) {
 		struct token *t = tokens + *i;
 
 		switch (t->type) {
-		// case TOKEN_TYPE_STRING:
-		// 	node->type = JSON_NODE_STRING;
-
-		// 	node->data.string.str = strings + strings_size;
-		// 	if (push_string(t->offset, t->length)) {
-		// 		return true;
-		// 	}
-		// 	break;
+		case TOKEN_TYPE_STRING:
+			// size_t child_node_index = nodes_size;
+			if (parse_string(i)) {
+				return true;
+			}
+			// child_nodes[child_nodes_size++] = nodes[child_node_index];
+			break;
 		// case TOKEN_TYPE_ARRAY_OPEN:
 		// 	if (parse_array(node, i)) {
 		// 		return true;
