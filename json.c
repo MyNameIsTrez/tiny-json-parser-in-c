@@ -48,6 +48,7 @@ static bool reserve_node(void) {
 		json_error = JSON_ERROR_TOO_MANY_JSON_NODES;
 		return true;
 	}
+	nodes_size++;
 	return false;
 }
 
@@ -69,6 +70,8 @@ static bool parse_array(size_t *i) {
 	if (reserve_node()) {
 		return true;
 	}
+
+	node->data.array.nodes_offset = nodes_size;
 
 	node->type = JSON_NODE_ARRAY;
 
