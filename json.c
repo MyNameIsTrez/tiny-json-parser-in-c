@@ -13,12 +13,30 @@
 #define MAX_FIELDS 420420
 #define MAX_NODES_PER_STACK_FRAME 1337
 
-#define JSON_ERROR(error) { json_error = error; json_error_line_number = __LINE__; longjmp(error_jmp_buffer, 1); } while(0)
+#define JSON_ERROR(error) {\
+	json_error = error;\
+	json_error_line_number = __LINE__;\
+	longjmp(error_jmp_buffer, 1);\
+}
 
 static jmp_buf error_jmp_buffer;
 
 enum json_error json_error;
 int json_error_line_number;
+char *json_error_messages[] = {
+	[JSON_NO_ERROR] = "JSON_NO_ERROR",
+	[JSON_ERROR_FAILED_TO_OPEN_JSON_FILE] = "JSON_ERROR_FAILED_TO_OPEN_JSON_FILE",
+	[JSON_ERROR_FAILED_TO_CLOSE_JSON_FILE] = "JSON_ERROR_FAILED_TO_CLOSE_JSON_FILE",
+	[JSON_ERROR_JSON_FILE_IS_EMPTY] = "JSON_ERROR_JSON_FILE_IS_EMPTY",
+	[JSON_ERROR_JSON_FILE_TOO_BIG] = "JSON_ERROR_JSON_FILE_TOO_BIG",
+	[JSON_ERROR_JSON_FILE_READING_ERROR] = "JSON_ERROR_JSON_FILE_READING_ERROR",
+	[JSON_ERROR_TOO_MANY_TOKENS] = "JSON_ERROR_TOO_MANY_TOKENS",
+	[JSON_ERROR_UNRECOGNIZED_CHARACTER] = "JSON_ERROR_UNRECOGNIZED_CHARACTER",
+	[JSON_ERROR_TOO_MANY_JSON_NODES] = "JSON_ERROR_TOO_MANY_JSON_NODES",
+	[JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS] = "JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS",
+	[JSON_ERROR_UNMATCHED_ARRAY_CLOSE] = "JSON_ERROR_UNMATCHED_ARRAY_CLOSE",
+	[JSON_ERROR_UNMATCHED_OBJECT_CLOSE] = "JSON_ERROR_UNMATCHED_OBJECT_CLOSE",
+};
 
 static char text[MAX_CHARACTERS_IN_JSON_FILE];
 static size_t text_size;
@@ -178,13 +196,13 @@ static struct json_node parse(size_t *i) {
 	abort();
 }
 
-static void print_tokens(void) {
-	printf("tokens:\n");
-	for (size_t i = 0; i < tokens_size; i++) {
-		struct token t = tokens[i];
-		printf("'%.*s'\n", (int)t.length, text + t.offset);
-	}
-}
+// static void print_tokens(void) {
+// 	printf("tokens:\n");
+// 	for (size_t i = 0; i < tokens_size; i++) {
+// 		struct token t = tokens[i];
+// 		printf("'%.*s'\n", (int)t.length, text + t.offset);
+// 	}
+// }
 
 static void push_token(enum token_type type, size_t offset, size_t length) {
 	if (tokens_size + 1 > MAX_TOKENS) {
@@ -224,7 +242,7 @@ static void tokenize(void) {
 		i++;
 	}
 
-	print_tokens();
+	// print_tokens();
 }
 
 static void read_text(char *json_file_path) {
@@ -254,7 +272,7 @@ static void read_text(char *json_file_path) {
 
 	text[text_size] = '\0';
 
-	printf("text: '%s'\n", text);
+	// printf("text: '%s'\n", text);
 }
 
 static void reset(void) {
