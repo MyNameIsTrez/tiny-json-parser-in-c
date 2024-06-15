@@ -1,10 +1,13 @@
 #include "json.h"
 
 #include <assert.h>
+#include <string.h>
 
 static void ok_string() {
 	struct json_node node;
 	assert(!json_parse("./tests_ok/string.json", &node));
+	assert(node.type == JSON_NODE_STRING);
+	assert(strcmp(node.data.string.str, "\"\"") == 0);
 }
 
 static void ok_array() {

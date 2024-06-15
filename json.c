@@ -6,6 +6,7 @@
 #define MAX_JSON_NODES 420420
 #define MAX_CHARACTERS_IN_JSON_FILE 420420
 #define MAX_TOKENS 420420
+#define MAX_STRINGS_CHARACTERS 420420
 
 struct json_node json_nodes[MAX_JSON_NODES];
 
@@ -30,7 +31,33 @@ struct token {
 static struct token tokens[MAX_TOKENS];
 static size_t tokens_size;
 
-static void print_tokens() {
+static char strings[MAX_STRINGS_CHARACTERS];
+static size_t strings_size;
+
+static bool push_string(size_t offset, size_t length) {
+	if (strings_size + length >= MAX_STRINGS_CHARACTERS) {
+		json_error = JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS;
+		return true;
+	}
+	for (size_t i = 0; i < length; i++) {
+		strings[strings_size++] = text[offset + i];
+	}
+	strings[strings_size++] = '\0';
+	return false;
+}
+
+static bool parse(struct json_node *node) {
+	node->type = JSON_NODE_STRING;
+
+	node->data.string.str = strings + strings_size;
+	if (push_string(0, 2)) {
+		return true;
+	}
+
+	return false;
+}
+
+static void print_tokens(void) {
 	printf("tokens:\n");
 	for (size_t i = 0; i < tokens_size; i++) {
 		struct token t = tokens[i];
@@ -88,7 +115,6 @@ static bool tokenize(void) {
 
 	print_tokens();
 
-	(void)tokens;
 	return false;
 }
 
@@ -130,10 +156,11 @@ static bool read_text(char *json_file_path) {
 	return false;
 }
 
-static void reset() {
+static void reset(void) {
 	json_error = JSON_NO_ERROR;
 	text_size = 0;
 	tokens_size = 0;
+	strings_size = 0;
 }
 
 bool json_parse(char *json_file_path, struct json_node *returned) {
@@ -144,6 +171,10 @@ bool json_parse(char *json_file_path, struct json_node *returned) {
 	}
 
 	if (tokenize()) {
+		return true;
+	}
+
+	if (parse(returned)) {
 		return true;
 	}
 
