@@ -1,6 +1,7 @@
 #include "json.h"
 
 #include <ctype.h>
+#include <setjmp.h>
 #include <stdio.h>
 #include <sys/types.h>
 
@@ -11,7 +12,12 @@
 #define MAX_FIELDS 420420
 #define MAX_NODES_PER_STACK_FRAME 1337
 
+#define JSON_ERROR(error) { json_error = error; json_error_line_number = __LINE__; longjmp(error_jmp_buffer, 1); } while(0)
+
+static jmp_buf error_jmp_buffer;
+
 enum json_error json_error;
+int json_error_line_number;
 
 static char text[MAX_CHARACTERS_IN_JSON_FILE];
 static size_t text_size;
@@ -41,53 +47,26 @@ static size_t strings_size;
 struct json_field fields[MAX_FIELDS];
 static size_t fields_size;
 
-static bool parse_string(size_t *i);
-static bool parse_array(size_t *i);
+static struct json_string parse_string(size_t *i);
+static struct json_array parse_array(size_t *i);
 
-static bool reserve_node(void) {
+static void push_node(struct json_node node) {
 	if (nodes_size + 1 > MAX_NODES) {
-		json_error = JSON_ERROR_TOO_MANY_JSON_NODES;
-		return true;
+		JSON_ERROR(JSON_ERROR_TOO_MANY_JSON_NODES);
 	}
-	nodes_size++;
-	return false;
+	nodes[nodes_size++] = node;
 }
 
-static bool parse_object(size_t *i) {
-	struct json_node *node = nodes + nodes_size;
-	if (reserve_node()) {
-		return true;
-	}
+static struct json_node parse_object(size_t *i) {
+	struct json_node node;
 
 	node->type = JSON_NODE_OBJECT;
 
 	(void)i;
-
-	return false;
 }
 
-static bool parse_array(size_t *i) {
-	struct json_node *node = nodes + nodes_size;
-	if (reserve_node()) {
-		return true;
-	}
-
-	// TODO:
-	// A local array (on the stack) needs to be used to ensure that
-	// all child nodes are placed into the global array contiguously
-	// by pushing them to the local array in the parse functions
-	// This is what grug does in parse_statements()
-	//
-	// There are two ways to get the child node:
-	// 1.
-	// All these parse functions start returning their struct,
-	// instead of returning a bool, by using longjmp() on error
-	// 2.
-	// The child node is obtained with nodes[nodes_size - 1],
-	// after the child node has been fully parsed
-	// This will NOT give the right result, since the child function calls
-	// will have already pushed (reserved) the space, making it impossible
-	// for the parent to put all child nodes in one contiguous block
+static struct json_node parse_array(size_t *i) {
+	struct json_node node;
 
 	node->data.array.nodes_offset = nodes_size;
 
@@ -102,9 +81,7 @@ static bool parse_array(size_t *i) {
 		switch (t->type) {
 		case TOKEN_TYPE_STRING:
 			// size_t child_node_index = nodes_size;
-			if (parse_string(i)) {
-				return true;
-			}
+			parse_string(i);
 			// child_nodes[child_nodes_size++] = nodes[child_node_index];
 			break;
 		// case TOKEN_TYPE_ARRAY_OPEN:
@@ -113,81 +90,65 @@ static bool parse_array(size_t *i) {
 		// 	}
 		// 	break;
 		case TOKEN_TYPE_ARRAY_CLOSE:
-			return false;
+			return node;
 		// case TOKEN_TYPE_OBJECT_OPEN:
 		// 	node->type = JSON_NODE_OBJECT;
 		// 	break;
 		case TOKEN_TYPE_OBJECT_CLOSE:
-			json_error = JSON_ERROR_UNMATCHED_OBJECT_CLOSE;
-			return true;
+			JSON_ERROR(JSON_ERROR_UNMATCHED_OBJECT_CLOSE);
 		}
 
 		(*i)++;
 	}
 
-	return false;
+	abort();
 }
 
-static bool push_string(size_t offset, size_t length) {
+static void push_string(size_t offset, size_t length) {
 	if (strings_size + length >= MAX_STRINGS_CHARACTERS) {
-		json_error = JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS;
-		return true;
+		JSON_ERROR(JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS);
 	}
 	for (size_t i = 0; i < length; i++) {
 		strings[strings_size++] = text[offset + i];
 	}
 	strings[strings_size++] = '\0';
-	return false;
 }
 
-static bool parse_string(size_t *i) {
-	struct json_node *node = nodes + nodes_size;
-	if (reserve_node()) {
-		return true;
-	}
+static struct json_node parse_string(size_t *i) {
+	struct json_node node;
 
 	node->type = JSON_NODE_STRING;
 
 	node->data.string.str = strings + strings_size;
 
 	struct token *t = tokens + *i;
-	if (push_string(t->offset, t->length)) {
-		return true;
-	}
+	push_string(t->offset, t->length));
 }
 
-static bool parse(size_t *i) {
+static struct json_node parse(size_t *i) {
 	while (*i < tokens_size) {
 		struct token *t = tokens + *i;
 
 		switch (t->type) {
 		case TOKEN_TYPE_STRING:
-			if (parse_string(i)) {
-				return true;
-			}
+			parse_string(i);
 			break;
 		case TOKEN_TYPE_ARRAY_OPEN:
-			if (parse_array(i)) {
-				return true;
-			}
+			parse_array(i);
 			break;
 		case TOKEN_TYPE_ARRAY_CLOSE:
-			json_error = JSON_ERROR_UNMATCHED_ARRAY_CLOSE;
-			return true;
+			JSON_ERROR(JSON_ERROR_UNMATCHED_ARRAY_CLOSE);
 		case TOKEN_TYPE_OBJECT_OPEN:
-			if (parse_object(i)) {
-				return true;
-			}
+			parse_object(i);
 			break;
 		case TOKEN_TYPE_OBJECT_CLOSE:
-			json_error = JSON_ERROR_UNMATCHED_OBJECT_CLOSE;
-			return true;
+			JSON_ERROR(JSON_ERROR_UNMATCHED_OBJECT_CLOSE);
 		}
 
 		(*i)++;
 	}
 
-	return false;
+	abort();
 }
 
 static void print_tokens(void) {
@@ -302,6 +263,10 @@ static void reset(void) {
 }
 
 bool json_parse(char *json_file_path, struct json_node *returned) {
+	if (setjmp(error_jmp_buffer)) {
+		return true;
+	}
+
 	reset();
 
 	if (read_text(json_file_path)) {
