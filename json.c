@@ -304,14 +304,6 @@ static struct json_node parse(size_t *i) {
 	abort();
 }
 
-// static void print_tokens(void) {
-// 	printf("tokens:\n");
-// 	for (size_t i = 0; i < tokens_size; i++) {
-// 		struct token t = tokens[i];
-// 		printf("'%.*s'\n", (int)t.length, text + t.offset);
-// 	}
-// }
-
 static void push_token(enum token_type type, size_t offset, size_t length) {
 	if (tokens_size + 1 > MAX_TOKENS) {
 		JSON_ERROR(JSON_ERROR_TOO_MANY_TOKENS);
@@ -353,8 +345,6 @@ static void tokenize(void) {
 		}
 		i++;
 	}
-
-	// print_tokens();
 }
 
 static void read_text(char *json_file_path) {
@@ -383,8 +373,6 @@ static void read_text(char *json_file_path) {
 	}
 
 	text[text_size] = '\0';
-
-	// printf("text: '%s'\n", text);
 }
 
 static void reset(void) {
