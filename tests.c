@@ -8,11 +8,13 @@ static void ok_string() {
 }
 
 static void ok_array() {
-	
+	struct json_node node;
+	assert(!json_parse("./tests_ok/array.json", &node));
 }
 
 static void ok_object() {
-	
+	struct json_node node;
+	assert(!json_parse("./tests_ok/object.json", &node));
 }
 
 static void error_json_file_is_empty() {
