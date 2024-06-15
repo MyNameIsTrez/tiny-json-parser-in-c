@@ -46,12 +46,20 @@ static bool push_string(size_t offset, size_t length) {
 	return false;
 }
 
-static bool parse(struct json_node *node) {
-	node->type = JSON_NODE_STRING;
+static bool parse(struct json_node *node, size_t *i) {
+	while (*i < tokens_size) {
+		struct token *t = tokens + *i;
 
-	node->data.string.str = strings + strings_size;
-	if (push_string(0, 2)) {
-		return true;
+		if (t->type == TOKEN_TYPE_STRING) {
+			node->type = JSON_NODE_STRING;
+
+			node->data.string.str = strings + strings_size;
+			if (push_string(t->offset, t->length)) {
+				return true;
+			}
+		}
+
+		(*i)++;
 	}
 
 	return false;
@@ -174,7 +182,8 @@ bool json_parse(char *json_file_path, struct json_node *returned) {
 		return true;
 	}
 
-	if (parse(returned)) {
+	size_t token_index = 0;
+	if (parse(returned, &token_index)) {
 		return true;
 	}
 
