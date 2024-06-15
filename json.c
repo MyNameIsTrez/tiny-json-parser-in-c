@@ -31,25 +31,45 @@ struct token {
 static struct token tokens[MAX_TOKENS];
 static size_t tokens_size;
 
-struct json_node json_nodes[MAX_JSON_NODES];
-static size_t json_nodes_size;
-
-struct json_field json_fields[MAX_JSON_FIELDS];
-static size_t json_fields_size;
+struct json_node nodes[MAX_JSON_NODES];
+static size_t nodes_size;
 
 static char strings[MAX_STRINGS_CHARACTERS];
 static size_t strings_size;
 
-static bool parse_string(struct json_node *node, size_t *i);
-static bool parse_array(struct json_node *node, size_t *i);
+struct json_field json_fields[MAX_JSON_FIELDS];
+static size_t json_fields_size;
 
-static bool parse_object(struct json_node *node, size_t *i) {
-	(void)node;
-	(void)i;
+static bool parse_string(size_t *i);
+static bool parse_array(size_t *i);
+
+static bool reserve_node(void) {
+	if (nodes_size + 1 > MAX_JSON_NODES) {
+		json_error = JSON_ERROR_TOO_MANY_JSON_NODES;
+		return true;
+	}
 	return false;
 }
 
-static bool parse_array(struct json_node *node, size_t *i) {
+static bool parse_object(size_t *i) {
+	struct json_node *node = nodes + nodes_size;
+	if (reserve_node()) {
+		return true;
+	}
+
+	node->type = JSON_NODE_OBJECT;
+
+	(void)i;
+
+	return false;
+}
+
+static bool parse_array(size_t *i) {
+	struct json_node *node = nodes + nodes_size;
+	if (reserve_node()) {
+		return true;
+	}
+
 	node->type = JSON_NODE_ARRAY;
 
 	while (*i < tokens_size) {
@@ -97,7 +117,12 @@ static bool push_string(size_t offset, size_t length) {
 	return false;
 }
 
-static bool parse_string(struct json_node *node, size_t *i) {
+static bool parse_string(size_t *i) {
+	struct json_node *node = nodes + nodes_size;
+	if (reserve_node()) {
+		return true;
+	}
+
 	node->type = JSON_NODE_STRING;
 
 	node->data.string.str = strings + strings_size;
@@ -108,18 +133,18 @@ static bool parse_string(struct json_node *node, size_t *i) {
 	}
 }
 
-static bool parse(struct json_node *node, size_t *i) {
+static bool parse(size_t *i) {
 	while (*i < tokens_size) {
 		struct token *t = tokens + *i;
 
 		switch (t->type) {
 		case TOKEN_TYPE_STRING:
-			if (parse_string(node, i)) {
+			if (parse_string(i)) {
 				return true;
 			}
 			break;
 		case TOKEN_TYPE_ARRAY_OPEN:
-			if (parse_array(node, i)) {
+			if (parse_array(i)) {
 				return true;
 			}
 			break;
@@ -127,8 +152,7 @@ static bool parse(struct json_node *node, size_t *i) {
 			json_error = JSON_ERROR_UNMATCHED_ARRAY_CLOSE;
 			return true;
 		case TOKEN_TYPE_OBJECT_OPEN:
-			node->type = JSON_NODE_OBJECT;
-			if (parse_object(node, i)) {
+			if (parse_object(i)) {
 				return true;
 			}
 			break;
@@ -249,9 +273,9 @@ static void reset(void) {
 	json_error = JSON_NO_ERROR;
 	text_size = 0;
 	tokens_size = 0;
-	json_nodes_size = 0;
-	json_fields_size = 0;
+	nodes_size = 0;
 	strings_size = 0;
+	json_fields_size = 0;
 }
 
 bool json_parse(char *json_file_path, struct json_node *returned) {
@@ -266,10 +290,13 @@ bool json_parse(char *json_file_path, struct json_node *returned) {
 	}
 
 	size_t token_index = 0;
-	if (parse(returned, &token_index)) {
+	if (parse(&token_index)) {
 		return true;
 	}
 
-	(void)returned;
+	if (nodes_size > 0) {
+		*returned = nodes[0];
+	}
+
 	return false;
 }
