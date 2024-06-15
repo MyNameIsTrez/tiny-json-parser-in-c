@@ -1,14 +1,14 @@
 #include "json.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <sys/types.h>
 
-#define MAX_JSON_NODES 420420
 #define MAX_CHARACTERS_IN_JSON_FILE 420420
 #define MAX_TOKENS 420420
 #define MAX_STRINGS_CHARACTERS 420420
-
-struct json_node json_nodes[MAX_JSON_NODES];
+#define MAX_JSON_NODES 420420
+#define MAX_JSON_FIELDS 420420
 
 enum json_error json_error;
 
@@ -31,8 +31,59 @@ struct token {
 static struct token tokens[MAX_TOKENS];
 static size_t tokens_size;
 
+struct json_node json_nodes[MAX_JSON_NODES];
+static size_t json_nodes_size;
+
+struct json_field json_fields[MAX_JSON_FIELDS];
+static size_t json_fields_size;
+
 static char strings[MAX_STRINGS_CHARACTERS];
 static size_t strings_size;
+
+static bool parse_string(struct json_node *node, size_t *i);
+static bool parse_array(struct json_node *node, size_t *i);
+
+static bool parse_object(struct json_node *node, size_t *i) {
+	(void)node;
+	(void)i;
+	return false;
+}
+
+static bool parse_array(struct json_node *node, size_t *i) {
+	node->type = JSON_NODE_ARRAY;
+
+	while (*i < tokens_size) {
+		struct token *t = tokens + *i;
+
+		switch (t->type) {
+		// case TOKEN_TYPE_STRING:
+		// 	node->type = JSON_NODE_STRING;
+
+		// 	node->data.string.str = strings + strings_size;
+		// 	if (push_string(t->offset, t->length)) {
+		// 		return true;
+		// 	}
+		// 	break;
+		// case TOKEN_TYPE_ARRAY_OPEN:
+		// 	if (parse_array(node, i)) {
+		// 		return true;
+		// 	}
+		// 	break;
+		case TOKEN_TYPE_ARRAY_CLOSE:
+			return false;
+		// case TOKEN_TYPE_OBJECT_OPEN:
+		// 	node->type = JSON_NODE_OBJECT;
+		// 	break;
+		case TOKEN_TYPE_OBJECT_CLOSE:
+			json_error = JSON_ERROR_UNMATCHED_OBJECT_CLOSE;
+			return true;
+		}
+
+		(*i)++;
+	}
+
+	return false;
+}
 
 static bool push_string(size_t offset, size_t length) {
 	if (strings_size + length >= MAX_STRINGS_CHARACTERS) {
@@ -46,17 +97,44 @@ static bool push_string(size_t offset, size_t length) {
 	return false;
 }
 
+static bool parse_string(struct json_node *node, size_t *i) {
+	node->type = JSON_NODE_STRING;
+
+	node->data.string.str = strings + strings_size;
+
+	struct token *t = tokens + *i;
+	if (push_string(t->offset, t->length)) {
+		return true;
+	}
+}
+
 static bool parse(struct json_node *node, size_t *i) {
 	while (*i < tokens_size) {
 		struct token *t = tokens + *i;
 
-		if (t->type == TOKEN_TYPE_STRING) {
-			node->type = JSON_NODE_STRING;
-
-			node->data.string.str = strings + strings_size;
-			if (push_string(t->offset, t->length)) {
+		switch (t->type) {
+		case TOKEN_TYPE_STRING:
+			if (parse_string(node, i)) {
 				return true;
 			}
+			break;
+		case TOKEN_TYPE_ARRAY_OPEN:
+			if (parse_array(node, i)) {
+				return true;
+			}
+			break;
+		case TOKEN_TYPE_ARRAY_CLOSE:
+			json_error = JSON_ERROR_UNMATCHED_ARRAY_CLOSE;
+			return true;
+		case TOKEN_TYPE_OBJECT_OPEN:
+			node->type = JSON_NODE_OBJECT;
+			if (parse_object(node, i)) {
+				return true;
+			}
+			break;
+		case TOKEN_TYPE_OBJECT_CLOSE:
+			json_error = JSON_ERROR_UNMATCHED_OBJECT_CLOSE;
+			return true;
 		}
 
 		(*i)++;
@@ -117,6 +195,9 @@ static bool tokenize(void) {
 			if (push_token(TOKEN_TYPE_OBJECT_CLOSE, i, 1)) {
 				return true;
 			}
+		} else if (!isspace(text[i])) {
+			json_error = JSON_ERROR_UNRECOGNIZED_CHARACTER;
+			return true;
 		}
 		i++;
 	}
@@ -168,6 +249,8 @@ static void reset(void) {
 	json_error = JSON_NO_ERROR;
 	text_size = 0;
 	tokens_size = 0;
+	json_nodes_size = 0;
+	json_fields_size = 0;
 	strings_size = 0;
 }
 

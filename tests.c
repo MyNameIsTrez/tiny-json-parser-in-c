@@ -13,11 +13,15 @@ static void ok_string() {
 static void ok_array() {
 	struct json_node node;
 	assert(!json_parse("./tests_ok/array.json", &node));
+	assert(node.type == JSON_NODE_ARRAY);
+	assert(node.data.array.node_count == 0);
 }
 
 static void ok_object() {
 	struct json_node node;
 	assert(!json_parse("./tests_ok/object.json", &node));
+	assert(node.type == JSON_NODE_OBJECT);
+	assert(node.data.object.field_count == 0);
 }
 
 static void error_json_file_is_empty() {
