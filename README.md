@@ -14,4 +14,4 @@ gcc tests.c json.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -g && \
 
 * Having the `\` character in strings does not allow escaping the `"` character.
 
-* Every time `json_parse()` is called, its arena gets reset, meaning that calling the function a second time overwrites the previous call's JSON result.
+* Every time `json_parse()` is called its arenas get reset, meaning that calling the function a second time overwrites the previous call's JSON result.
