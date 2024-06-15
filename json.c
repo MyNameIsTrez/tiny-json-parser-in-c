@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <setjmp.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 
 #define MAX_CHARACTERS_IN_JSON_FILE 420420
@@ -47,8 +48,8 @@ static size_t strings_size;
 struct json_field fields[MAX_FIELDS];
 static size_t fields_size;
 
-static struct json_string parse_string(size_t *i);
-static struct json_array parse_array(size_t *i);
+static struct json_node parse_string(size_t *i);
+static struct json_node parse_array(size_t *i);
 
 static void push_node(struct json_node node) {
 	if (nodes_size + 1 > MAX_NODES) {
@@ -60,40 +61,71 @@ static void push_node(struct json_node node) {
 static struct json_node parse_object(size_t *i) {
 	struct json_node node;
 
-	node->type = JSON_NODE_OBJECT;
+	node.type = JSON_NODE_OBJECT;
+	(*i)++;
 
-	(void)i;
-}
+	node.data.object.fields_offset = fields_size;
+	node.data.object.field_count = 0;
 
-static struct json_node parse_array(size_t *i) {
-	struct json_node node;
-
-	node->data.array.nodes_offset = nodes_size;
-
-	node->type = JSON_NODE_ARRAY;
-
-	// struct json_node child_nodes[MAX_NODES_PER_STACK_FRAME];
-	// size_t child_nodes_size = 0;
+	struct json_node child_nodes[MAX_NODES_PER_STACK_FRAME];
 
 	while (*i < tokens_size) {
 		struct token *t = tokens + *i;
 
 		switch (t->type) {
 		case TOKEN_TYPE_STRING:
-			// size_t child_node_index = nodes_size;
-			parse_string(i);
-			// child_nodes[child_nodes_size++] = nodes[child_node_index];
+			child_nodes[node.data.object.field_count++] = parse_string(i);
 			break;
-		// case TOKEN_TYPE_ARRAY_OPEN:
-		// 	if (parse_array(node, i)) {
-		// 		return true;
-		// 	}
-		// 	break;
+		case TOKEN_TYPE_ARRAY_OPEN:
+			child_nodes[node.data.object.field_count++] = parse_array(i);
+			break;
 		case TOKEN_TYPE_ARRAY_CLOSE:
+			JSON_ERROR(JSON_ERROR_UNMATCHED_ARRAY_CLOSE);
+		case TOKEN_TYPE_OBJECT_OPEN:
+			child_nodes[node.data.object.field_count++] = parse_object(i);
+			break;
+		case TOKEN_TYPE_OBJECT_CLOSE:
+			for (size_t i = 0; i < node.data.object.field_count; i++) {
+				push_node(child_nodes[i]);
+			}
 			return node;
-		// case TOKEN_TYPE_OBJECT_OPEN:
-		// 	node->type = JSON_NODE_OBJECT;
-		// 	break;
+		}
+
+		(*i)++;
+	}
+
+	abort();
+}
+
+static struct json_node parse_array(size_t *i) {
+	struct json_node node;
+
+	node.type = JSON_NODE_ARRAY;
+	(*i)++;
+
+	node.data.array.nodes_offset = nodes_size;
+	node.data.array.node_count = 0;
+
+	struct json_node child_nodes[MAX_NODES_PER_STACK_FRAME];
+
+	while (*i < tokens_size) {
+		struct token *t = tokens + *i;
+
+		switch (t->type) {
+		case TOKEN_TYPE_STRING:
+			child_nodes[node.data.array.node_count++] = parse_string(i);
+			break;
+		case TOKEN_TYPE_ARRAY_OPEN:
+			child_nodes[node.data.array.node_count++] = parse_array(i);
+			break;
+		case TOKEN_TYPE_ARRAY_CLOSE:
+			for (size_t i = 0; i < node.data.array.node_count; i++) {
+				push_node(child_nodes[i]);
+			}
+			return node;
+		case TOKEN_TYPE_OBJECT_OPEN:
+			child_nodes[node.data.array.node_count++] = parse_object(i);
+			break;
 		case TOKEN_TYPE_OBJECT_CLOSE:
 			JSON_ERROR(JSON_ERROR_UNMATCHED_OBJECT_CLOSE);
 		}
@@ -117,35 +149,30 @@ static void push_string(size_t offset, size_t length) {
 static struct json_node parse_string(size_t *i) {
 	struct json_node node;
 
-	node->type = JSON_NODE_STRING;
+	node.type = JSON_NODE_STRING;
 
-	node->data.string.str = strings + strings_size;
+	node.data.string.str = strings + strings_size;
 
 	struct token *t = tokens + *i;
-	push_string(t->offset, t->length));
+	push_string(t->offset, t->length);
+
+	return node;
 }
 
 static struct json_node parse(size_t *i) {
-	while (*i < tokens_size) {
-		struct token *t = tokens + *i;
+	struct token *t = tokens + *i;
 
-		switch (t->type) {
-		case TOKEN_TYPE_STRING:
-			parse_string(i);
-			break;
-		case TOKEN_TYPE_ARRAY_OPEN:
-			parse_array(i);
-			break;
-		case TOKEN_TYPE_ARRAY_CLOSE:
-			JSON_ERROR(JSON_ERROR_UNMATCHED_ARRAY_CLOSE);
-		case TOKEN_TYPE_OBJECT_OPEN:
-			parse_object(i);
-			break;
-		case TOKEN_TYPE_OBJECT_CLOSE:
-			JSON_ERROR(JSON_ERROR_UNMATCHED_OBJECT_CLOSE);
-		}
-
-		(*i)++;
+	switch (t->type) {
+	case TOKEN_TYPE_STRING:
+		return parse_string(i);
+	case TOKEN_TYPE_ARRAY_OPEN:
+		return parse_array(i);
+	case TOKEN_TYPE_ARRAY_CLOSE:
+		JSON_ERROR(JSON_ERROR_UNMATCHED_ARRAY_CLOSE);
+	case TOKEN_TYPE_OBJECT_OPEN:
+		return parse_object(i);
+	case TOKEN_TYPE_OBJECT_CLOSE:
+		JSON_ERROR(JSON_ERROR_UNMATCHED_OBJECT_CLOSE);
 	}
 
 	abort();
@@ -159,20 +186,18 @@ static void print_tokens(void) {
 	}
 }
 
-static bool push_token(enum token_type type, size_t offset, size_t length) {
+static void push_token(enum token_type type, size_t offset, size_t length) {
 	if (tokens_size + 1 > MAX_TOKENS) {
-		json_error = JSON_ERROR_TOO_MANY_TOKENS;
-		return true;
+		JSON_ERROR(JSON_ERROR_TOO_MANY_TOKENS);
 	}
 	tokens[tokens_size++] = (struct token){
 		.type = type,
 		.offset = offset,
 		.length = length,
 	};
-	return false;
 }
 
-static bool tokenize(void) {
+static void tokenize(void) {
 	size_t i = 0;
 	bool in_string = false;
 	size_t string_start_index;
@@ -180,46 +205,32 @@ static bool tokenize(void) {
 	while (i < text_size) {
 		if (text[i] == '"') {
 			if (in_string) {
-				if (push_token(TOKEN_TYPE_STRING, string_start_index, i - string_start_index + 1)) {
-					return true;
-				}
+				push_token(TOKEN_TYPE_STRING, string_start_index, i - string_start_index + 1);
 			} else {
 				string_start_index = i;
 			}
 			in_string = !in_string;
 		} else if (text[i] == '[') {
-			if (push_token(TOKEN_TYPE_ARRAY_OPEN, i, 1)) {
-				return true;
-			}
+			push_token(TOKEN_TYPE_ARRAY_OPEN, i, 1);
 		} else if (text[i] == ']') {
-			if (push_token(TOKEN_TYPE_ARRAY_CLOSE, i, 1)) {
-				return true;
-			}
+			push_token(TOKEN_TYPE_ARRAY_CLOSE, i, 1);
 		} else if (text[i] == '{') {
-			if (push_token(TOKEN_TYPE_OBJECT_OPEN, i, 1)) {
-				return true;
-			}
+			push_token(TOKEN_TYPE_OBJECT_OPEN, i, 1);
 		} else if (text[i] == '}') {
-			if (push_token(TOKEN_TYPE_OBJECT_CLOSE, i, 1)) {
-				return true;
-			}
-		} else if (!isspace(text[i])) {
-			json_error = JSON_ERROR_UNRECOGNIZED_CHARACTER;
-			return true;
+			push_token(TOKEN_TYPE_OBJECT_CLOSE, i, 1);
+		} else if (!isspace(text[i]) && !in_string) {
+			JSON_ERROR(JSON_ERROR_UNRECOGNIZED_CHARACTER);
 		}
 		i++;
 	}
 
 	print_tokens();
-
-	return false;
 }
 
-static bool read_text(char *json_file_path) {
+static void read_text(char *json_file_path) {
 	FILE *f = fopen(json_file_path, "r");
 	if (!f) {
-		json_error = JSON_ERROR_FAILED_TO_OPEN_JSON_FILE;
-		return true;
+		JSON_ERROR(JSON_ERROR_FAILED_TO_OPEN_JSON_FILE);
 	}
 
 	text_size = fread(text, sizeof(char), MAX_CHARACTERS_IN_JSON_FILE, f);
@@ -228,29 +239,22 @@ static bool read_text(char *json_file_path) {
 	int err = ferror(f);
 
     if (fclose(f)) {
-		json_error = JSON_ERROR_FAILED_TO_CLOSE_JSON_FILE;
-		return true;
+		JSON_ERROR(JSON_ERROR_FAILED_TO_CLOSE_JSON_FILE);
     }
 
 	if (text_size == 0) {
-		json_error = JSON_ERROR_JSON_FILE_IS_EMPTY;
-		return true;
+		JSON_ERROR(JSON_ERROR_JSON_FILE_IS_EMPTY);
 	}
 	if (!is_eof || text_size == MAX_CHARACTERS_IN_JSON_FILE) {
-		json_error = JSON_ERROR_JSON_FILE_TOO_BIG;
-		return true;
+		JSON_ERROR(JSON_ERROR_JSON_FILE_TOO_BIG);
 	}
 	if (err) {
-		printf("err: %d\n", err);
-		json_error = JSON_ERROR_JSON_FILE_READING_ERROR;
-		return true;
+		JSON_ERROR(JSON_ERROR_JSON_FILE_READING_ERROR);
 	}
 
 	text[text_size] = '\0';
 
 	printf("text: '%s'\n", text);
-
-	return false;
 }
 
 static void reset(void) {
@@ -269,22 +273,12 @@ bool json_parse(char *json_file_path, struct json_node *returned) {
 
 	reset();
 
-	if (read_text(json_file_path)) {
-		return true;
-	}
+	read_text(json_file_path);
 
-	if (tokenize()) {
-		return true;
-	}
+	tokenize();
 
 	size_t token_index = 0;
-	if (parse(&token_index)) {
-		return true;
-	}
-
-	if (nodes_size > 0) {
-		*returned = nodes[0];
-	}
+	*returned = parse(&token_index);
 
 	return false;
 }

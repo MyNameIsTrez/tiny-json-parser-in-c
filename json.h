@@ -52,6 +52,7 @@ enum json_error {
 
 // Use to figure out what type of error occurred
 extern enum json_error json_error;
+extern int json_error_line_number;
 
 // Returns whether there was an error
 bool json_parse(char *json_file_path, struct json_node *returned);
