@@ -42,13 +42,27 @@ The motivation for writing this program was that my tiny programming language ca
 Make sure to install [gcovr](https://gcovr.com/en/stable/installation.html) first.
 
 ```bash
-clear && \
-gcc tests.c json.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -g --coverage && \
-./a.out && \
+clear &&\
+gcc json.c tests.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -g --coverage &&\
+./a.out &&\
 gcovr --html-details coverage.html
 ```
 
 You can then view the generated `coverage.html` in your browser. You should see that the program has nearly 100% line and branch coverage.
+
+## Fuzzing
+
+Uses [libFuzzer](https://llvm.org/docs/LibFuzzer.html), which requires [Clang](https://en.wikipedia.org/wiki/Clang) to be installed.
+
+```bash
+clear &&\
+clang json.c fuzz.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -Ofast -march=native -g -fsanitize=undefined,fuzzer &&\
+mkdir -p test_corpus &&\
+cp tests_err/* tests_ok/* test_corpus &&\
+mkdir -p corpus &&\
+./a.out -merge=1 corpus test_corpus &&\
+./a.out corpus
+```
 
 ## Limitations
 

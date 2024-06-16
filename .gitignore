@@ -1,9 +1,12 @@
 .vscode
+corpus
+test_corpus
 a-json.gcda
 a-json.gcno
 a-tests.gcda
 a-tests.gcno
 a.out
+crash-*
 coverage.css
 coverage.functions.html
 coverage.html
