@@ -2,14 +2,18 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define OK_PARSE(path, node) {\
-	assert(!json_parse(path, node) || fprintf(\
-			stderr,\
-			"json.c:%d: %s\n",\
-			json_error_line_number,\
-			json_error_messages[json_error]));\
+	assert(!json_parse(path, node) || (\
+			fprintf(\
+				stderr,\
+				"json.c:%d: %s in %s\n",\
+				json_error_line_number,\
+				json_error_messages[json_error],\
+				path\
+			), abort(), false));\
 }
 
 #define ERROR_PARSE(path, error) {\
@@ -215,11 +219,11 @@ static void error_file_empty(void) {
 }
 
 static void error_max_recursion_depth_array(void) {
-	ERROR_PARSE("./tests_err/max_recursion_depth_array.json", JSON_ERROR_MAX_RECURSION_DEPTH);
+	ERROR_PARSE("./tests_err/max_recursion_depth_array.json", JSON_ERROR_MAX_RECURSION_DEPTH_EXCEEDED);
 }
 
 static void error_max_recursion_depth_object(void) {
-	ERROR_PARSE("./tests_err/max_recursion_depth_object.json", JSON_ERROR_MAX_RECURSION_DEPTH);
+	ERROR_PARSE("./tests_err/max_recursion_depth_object.json", JSON_ERROR_MAX_RECURSION_DEPTH_EXCEEDED);
 }
 
 static void error_unexpected_array_close(void) {
@@ -272,6 +276,18 @@ static void error_unexpected_comma_object_2(void) {
 
 static void error_unexpected_comma(void) {
 	ERROR_PARSE("./tests_err/unexpected_comma.json", JSON_ERROR_UNEXPECTED_COMMA);
+}
+
+static void error_unexpected_extra_character_array(void) {
+	ERROR_PARSE("./tests_err/unexpected_extra_character_array.json", JSON_ERROR_UNEXPECTED_EXTRA_CHARACTER);
+}
+
+static void error_unexpected_extra_character_object(void) {
+	ERROR_PARSE("./tests_err/unexpected_extra_character_object.json", JSON_ERROR_UNEXPECTED_EXTRA_CHARACTER);
+}
+
+static void error_unexpected_extra_character_string(void) {
+	ERROR_PARSE("./tests_err/unexpected_extra_character_string.json", JSON_ERROR_UNEXPECTED_EXTRA_CHARACTER);
 }
 
 static void error_unexpected_object_array_close(void) {
@@ -343,6 +359,9 @@ static void error_tests(void) {
 	error_unexpected_comma_object_1();
 	error_unexpected_comma_object_2();
 	error_unexpected_comma();
+	error_unexpected_extra_character_array();
+	error_unexpected_extra_character_object();
+	error_unexpected_extra_character_string();
 	error_unexpected_object_array_close();
 	error_unexpected_object_close();
 	error_unexpected_object_open_1();
