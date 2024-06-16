@@ -13,7 +13,8 @@
 }
 
 #define ERROR_PARSE(path, error) {\
-	assert(json_parse(path, NULL) && json_error == error);\
+	assert(json_parse(path, NULL));\
+	assert(json_error == error);\
 }
 
 static void ok_array_in_array(void) {
@@ -205,12 +206,48 @@ static void error_array_max_recursion_depth(void) {
 	ERROR_PARSE("./tests_err/array_max_recursion_depth.json", JSON_ERROR_MAX_RECURSION_DEPTH);
 }
 
+static void error_array_unmatched_object_close(void) {
+	ERROR_PARSE("./tests_err/array_unmatched_object_close.json", JSON_ERROR_UNMATCHED_OBJECT_CLOSE);
+}
+
 static void error_file_empty(void) {
 	ERROR_PARSE("./tests_err/file_empty.json", JSON_ERROR_FILE_EMPTY);
 }
 
 static void error_object_max_recursion_depth(void) {
 	ERROR_PARSE("./tests_err/object_max_recursion_depth.json", JSON_ERROR_MAX_RECURSION_DEPTH);
+}
+
+static void error_object_unmatched_array_close(void) {
+	ERROR_PARSE("./tests_err/object_unmatched_array_close.json", JSON_ERROR_UNMATCHED_ARRAY_CLOSE);
+}
+
+static void error_root_unmatched_array_close(void) {
+	ERROR_PARSE("./tests_err/root_unmatched_array_close.json", JSON_ERROR_UNMATCHED_ARRAY_CLOSE);
+}
+
+static void error_root_unmatched_object_close(void) {
+	ERROR_PARSE("./tests_err/root_unmatched_object_close.json", JSON_ERROR_UNMATCHED_OBJECT_CLOSE);
+}
+
+static void error_unrecognized_character(void) {
+	ERROR_PARSE("./tests_err/unrecognized_character.json", JSON_ERROR_UNRECOGNIZED_CHARACTER);
+}
+
+static void error_unexpected_comma_array_1(void) {
+	ERROR_PARSE("./tests_err/unexpected_comma_array_1.json", JSON_ERROR_UNEXPECTED_COMMA);
+}
+
+static void error_unexpected_comma_array_2(void) {
+	ERROR_PARSE("./tests_err/unexpected_comma_array_2.json", JSON_ERROR_UNEXPECTED_COMMA);
+}
+
+static void error_unexpected_comma_object_1(void) {
+	ERROR_PARSE("./tests_err/unexpected_comma_object_1.json", JSON_ERROR_UNEXPECTED_COMMA);
+}
+
+static void error_unexpected_comma_object_2(void) {
+	ERROR_PARSE("./tests_err/unexpected_comma_object_2.json", JSON_ERROR_UNEXPECTED_COMMA);
 }
 
 static void ok_tests(void) {
@@ -227,9 +264,19 @@ static void ok_tests(void) {
 
 static void error_tests(void) {
 	error_failed_to_open_file();
+
 	error_array_max_recursion_depth();
+	error_array_unmatched_object_close();
 	error_file_empty();
 	error_object_max_recursion_depth();
+	error_object_unmatched_array_close();
+	error_root_unmatched_array_close();
+	error_root_unmatched_object_close();
+	error_unrecognized_character();
+	error_unexpected_comma_array_1();
+	error_unexpected_comma_array_2();
+	error_unexpected_comma_object_1();
+	error_unexpected_comma_object_2();
 }
 
 int main(void) {
