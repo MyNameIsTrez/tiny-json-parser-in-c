@@ -1,4 +1,4 @@
-# Tiny JSON Parser in C
+# Tiny JSON parser in C
 
 Parses a subset of [JSON](https://en.wikipedia.org/wiki/JSON) in a little over 400 lines of C, where only arrays, objects and strings are handled.
 
