@@ -58,7 +58,6 @@ enum json_error {
 	JSON_ERROR_UNEXPECTED_EXTRA_CHARACTER,
 };
 
-// Use to figure out what type of error occurred
 extern enum json_error json_error;
 extern int json_error_line_number;
 extern char *json_error_messages[];
