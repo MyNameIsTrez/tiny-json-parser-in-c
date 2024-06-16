@@ -37,13 +37,18 @@ The motivation for writing this program was that my tiny [grug](https://mynameis
 ]
 ```
 
-## Running the tests
+## Running the tests, and generating coverage
+
+Make sure to install [gcovr](https://gcovr.com/en/stable/installation.html) first.
 
 ```bash
 clear && \
-gcc tests.c json.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -g && \
-./a.out
+gcc tests.c json.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -g --coverage && \
+./a.out && \
+gcovr --html-details coverage.html
 ```
+
+You can then view the generated `coverage.html` in your browser.
 
 ## Limitations
 

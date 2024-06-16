@@ -1,2 +1,11 @@
 .vscode
+a-json.gcda
+a-json.gcno
+a-tests.gcda
+a-tests.gcno
 a.out
+coverage.css
+coverage.functions.html
+coverage.html
+coverage.json.c.*.html
+coverage.tests.c.*.html
