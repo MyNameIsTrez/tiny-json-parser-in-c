@@ -1,6 +1,6 @@
 # Tiny JSON parser in C
 
-Parses a subset of [JSON](https://en.wikipedia.org/wiki/JSON) in a little over 420 lines of C, where only arrays, objects and strings are handled.
+Parses a subset of [JSON](https://en.wikipedia.org/wiki/JSON) in roughly 420 lines of C, where only arrays, objects and strings are handled.
 
 The [JSON spec](https://www.json.org/json-en.html) specifies that the other value types are `number`, `true`, `false` and `null`, but they can all be stored as strings. You could easily support these however by adding just a few dozen lines to `json.c`, so feel free to.
 
