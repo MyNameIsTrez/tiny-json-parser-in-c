@@ -205,8 +205,8 @@ static void error_array_max_recursion_depth(void) {
 	ERROR_PARSE("./tests_err/array_max_recursion_depth.json", JSON_ERROR_MAX_RECURSION_DEPTH);
 }
 
-static void error_empty(void) {
-	ERROR_PARSE("./tests_err/empty.json", JSON_ERROR_FILE_IS_EMPTY);
+static void error_file_empty(void) {
+	ERROR_PARSE("./tests_err/file_empty.json", JSON_ERROR_FILE_EMPTY);
 }
 
 static void error_object_max_recursion_depth(void) {
@@ -228,7 +228,7 @@ static void ok_tests(void) {
 static void error_tests(void) {
 	error_failed_to_open_file();
 	error_array_max_recursion_depth();
-	error_empty();
+	error_file_empty();
 	error_object_max_recursion_depth();
 }
 
