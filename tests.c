@@ -198,36 +198,36 @@ static void ok_string(void) {
 	assert(strcmp(node.data.string, "") == 0);
 }
 
+static void error_expected_array_close(void) {
+	ERROR_PARSE("./tests_err/expected_array_close.json", JSON_ERROR_EXPECTED_ARRAY_CLOSE);
+}
+
+static void error_expected_object_close(void) {
+	ERROR_PARSE("./tests_err/expected_object_close.json", JSON_ERROR_EXPECTED_OBJECT_CLOSE);
+}
+
 static void error_failed_to_open_file(void) {
 	ERROR_PARSE("", JSON_ERROR_FAILED_TO_OPEN_FILE);
-}
-
-static void error_array_max_recursion_depth(void) {
-	ERROR_PARSE("./tests_err/array_max_recursion_depth.json", JSON_ERROR_MAX_RECURSION_DEPTH);
-}
-
-static void error_array_unmatched_object_close(void) {
-	ERROR_PARSE("./tests_err/array_unmatched_object_close.json", JSON_ERROR_UNMATCHED_OBJECT_CLOSE);
 }
 
 static void error_file_empty(void) {
 	ERROR_PARSE("./tests_err/file_empty.json", JSON_ERROR_FILE_EMPTY);
 }
 
-static void error_object_max_recursion_depth(void) {
-	ERROR_PARSE("./tests_err/object_max_recursion_depth.json", JSON_ERROR_MAX_RECURSION_DEPTH);
+static void error_max_recursion_depth_array(void) {
+	ERROR_PARSE("./tests_err/max_recursion_depth_array.json", JSON_ERROR_MAX_RECURSION_DEPTH);
 }
 
-static void error_object_unmatched_array_close(void) {
-	ERROR_PARSE("./tests_err/object_unmatched_array_close.json", JSON_ERROR_UNMATCHED_ARRAY_CLOSE);
+static void error_max_recursion_depth_object(void) {
+	ERROR_PARSE("./tests_err/max_recursion_depth_object.json", JSON_ERROR_MAX_RECURSION_DEPTH);
 }
 
-static void error_root_unmatched_array_close(void) {
-	ERROR_PARSE("./tests_err/root_unmatched_array_close.json", JSON_ERROR_UNMATCHED_ARRAY_CLOSE);
+static void error_unexpected_array_close(void) {
+	ERROR_PARSE("./tests_err/unexpected_array_close.json", JSON_ERROR_UNEXPECTED_ARRAY_CLOSE);
 }
 
-static void error_root_unmatched_object_close(void) {
-	ERROR_PARSE("./tests_err/root_unmatched_object_close.json", JSON_ERROR_UNMATCHED_OBJECT_CLOSE);
+static void error_unexpected_array_object_close(void) {
+	ERROR_PARSE("./tests_err/unexpected_array_object_close.json", JSON_ERROR_UNEXPECTED_OBJECT_CLOSE);
 }
 
 static void error_unexpected_array_open_1(void) {
@@ -236,6 +236,18 @@ static void error_unexpected_array_open_1(void) {
 
 static void error_unexpected_array_open_2(void) {
 	ERROR_PARSE("./tests_err/unexpected_array_open_2.json", JSON_ERROR_UNEXPECTED_ARRAY_OPEN);
+}
+
+static void error_unexpected_array_open_3(void) {
+	ERROR_PARSE("./tests_err/unexpected_array_open_3.json", JSON_ERROR_UNEXPECTED_ARRAY_OPEN);
+}
+
+static void error_unexpected_colon_1(void) {
+	ERROR_PARSE("./tests_err/unexpected_colon_1.json", JSON_ERROR_UNEXPECTED_COLON);
+}
+
+static void error_unexpected_colon_2(void) {
+	ERROR_PARSE("./tests_err/unexpected_colon_2.json", JSON_ERROR_UNEXPECTED_COLON);
 }
 
 static void error_unexpected_comma_array_1(void) {
@@ -254,12 +266,36 @@ static void error_unexpected_comma_object_2(void) {
 	ERROR_PARSE("./tests_err/unexpected_comma_object_2.json", JSON_ERROR_UNEXPECTED_COMMA);
 }
 
+static void error_unexpected_comma(void) {
+	ERROR_PARSE("./tests_err/unexpected_comma.json", JSON_ERROR_UNEXPECTED_COMMA);
+}
+
+static void error_unexpected_object_array_close(void) {
+	ERROR_PARSE("./tests_err/unexpected_object_array_close.json", JSON_ERROR_UNEXPECTED_ARRAY_CLOSE);
+}
+
+static void error_unexpected_object_close(void) {
+	ERROR_PARSE("./tests_err/unexpected_object_close.json", JSON_ERROR_UNEXPECTED_OBJECT_CLOSE);
+}
+
+static void error_unexpected_object_open_1(void) {
+	ERROR_PARSE("./tests_err/unexpected_object_open_1.json", JSON_ERROR_UNEXPECTED_OBJECT_OPEN);
+}
+
+static void error_unexpected_object_open_2(void) {
+	ERROR_PARSE("./tests_err/unexpected_object_open_2.json", JSON_ERROR_UNEXPECTED_OBJECT_OPEN);
+}
+
 static void error_unexpected_string_1(void) {
 	ERROR_PARSE("./tests_err/unexpected_string_1.json", JSON_ERROR_UNEXPECTED_STRING);
 }
 
 static void error_unexpected_string_2(void) {
 	ERROR_PARSE("./tests_err/unexpected_string_2.json", JSON_ERROR_UNEXPECTED_STRING);
+}
+
+static void error_unexpected_string_3(void) {
+	ERROR_PARSE("./tests_err/unexpected_string_3.json", JSON_ERROR_UNEXPECTED_STRING);
 }
 
 static void error_unrecognized_character(void) {
@@ -281,21 +317,30 @@ static void ok_tests(void) {
 static void error_tests(void) {
 	error_failed_to_open_file();
 
-	error_array_max_recursion_depth();
-	error_array_unmatched_object_close();
+	error_expected_array_close();
+	error_expected_object_close();
 	error_file_empty();
-	error_object_max_recursion_depth();
-	error_object_unmatched_array_close();
-	error_root_unmatched_array_close();
-	error_root_unmatched_object_close();
+	error_max_recursion_depth_array();
+	error_max_recursion_depth_object();
+	error_unexpected_array_close();
+	error_unexpected_array_object_close();
 	error_unexpected_array_open_1();
 	error_unexpected_array_open_2();
+	error_unexpected_array_open_3();
+	error_unexpected_colon_1();
+	error_unexpected_colon_2();
 	error_unexpected_comma_array_1();
 	error_unexpected_comma_array_2();
 	error_unexpected_comma_object_1();
 	error_unexpected_comma_object_2();
+	error_unexpected_comma();
+	error_unexpected_object_array_close();
+	error_unexpected_object_close();
+	error_unexpected_object_open_1();
+	error_unexpected_object_open_2();
 	error_unexpected_string_1();
 	error_unexpected_string_2();
+	error_unexpected_string_3();
 	error_unrecognized_character();
 }
 

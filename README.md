@@ -48,7 +48,7 @@ gcc tests.c json.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -g --coverage
 gcovr --html-details coverage.html
 ```
 
-You can then view the generated `coverage.html` in your browser. You should see that the program has 100% line coverage.
+You can then view the generated `coverage.html` in your browser. You should see that the program has nearly 100% line and branch coverage.
 
 ## Limitations
 

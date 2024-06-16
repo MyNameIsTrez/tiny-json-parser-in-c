@@ -36,13 +36,14 @@ char *json_error_messages[] = {
 	[JSON_ERROR_TOO_MANY_NODES] = "JSON_ERROR_TOO_MANY_NODES",
 	[JSON_ERROR_TOO_MANY_FIELDS] = "JSON_ERROR_TOO_MANY_FIELDS",
 	[JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS] = "JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS",
-	[JSON_ERROR_UNMATCHED_ARRAY_CLOSE] = "JSON_ERROR_UNMATCHED_ARRAY_CLOSE",
-	[JSON_ERROR_UNMATCHED_OBJECT_CLOSE] = "JSON_ERROR_UNMATCHED_OBJECT_CLOSE",
 	[JSON_ERROR_MAX_RECURSION_DEPTH] = "JSON_ERROR_MAX_RECURSION_DEPTH",
-	[JSON_ERROR_OBJECT_FIELD] = "JSON_ERROR_OBJECT_FIELD",
-	[JSON_ERROR_NOT_EXPECTING_VALUE] = "JSON_ERROR_NOT_EXPECTING_VALUE",
+	[JSON_ERROR_EXPECTED_ARRAY_CLOSE] = "JSON_ERROR_EXPECTED_ARRAY_CLOSE",
+	[JSON_ERROR_EXPECTED_OBJECT_CLOSE] = "JSON_ERROR_EXPECTED_OBJECT_CLOSE",
 	[JSON_ERROR_UNEXPECTED_STRING] = "JSON_ERROR_UNEXPECTED_STRING",
 	[JSON_ERROR_UNEXPECTED_ARRAY_OPEN] = "JSON_ERROR_UNEXPECTED_ARRAY_OPEN",
+	[JSON_ERROR_UNEXPECTED_ARRAY_CLOSE] = "JSON_ERROR_UNEXPECTED_ARRAY_CLOSE",
+	[JSON_ERROR_UNEXPECTED_OBJECT_OPEN] = "JSON_ERROR_UNEXPECTED_OBJECT_OPEN",
+	[JSON_ERROR_UNEXPECTED_OBJECT_CLOSE] = "JSON_ERROR_UNEXPECTED_OBJECT_CLOSE",
 	[JSON_ERROR_UNEXPECTED_COMMA] = "JSON_ERROR_UNEXPECTED_COMMA",
 	[JSON_ERROR_UNEXPECTED_COLON] = "JSON_ERROR_UNEXPECTED_COLON",
 };
@@ -164,7 +165,7 @@ static struct json_node parse_object(size_t *i) {
 			}
 			break;
 		case TOKEN_TYPE_ARRAY_CLOSE:
-			JSON_ERROR(JSON_ERROR_UNMATCHED_ARRAY_CLOSE);
+			JSON_ERROR(JSON_ERROR_UNEXPECTED_ARRAY_CLOSE);
 		case TOKEN_TYPE_OBJECT_OPEN:
 			if (seen_colon && !seen_value) {
 				seen_value = true;
@@ -173,7 +174,7 @@ static struct json_node parse_object(size_t *i) {
 				push_node(object);
 				child_fields[node.data.object.field_count++] = field;
 			} else {
-				JSON_ERROR(JSON_ERROR_OBJECT_FIELD);
+				JSON_ERROR(JSON_ERROR_UNEXPECTED_OBJECT_OPEN);
 			}
 			break;
 		case TOKEN_TYPE_OBJECT_CLOSE:
@@ -192,7 +193,7 @@ static struct json_node parse_object(size_t *i) {
 			break;
 		case TOKEN_TYPE_COLON:
 			if (!seen_key) {
-				JSON_ERROR(JSON_ERROR_OBJECT_FIELD);
+				JSON_ERROR(JSON_ERROR_UNEXPECTED_COLON);
 			}
 			seen_colon = true;
 			break;
@@ -201,7 +202,7 @@ static struct json_node parse_object(size_t *i) {
 		(*i)++;
 	}
 
-	abort();
+	JSON_ERROR(JSON_ERROR_EXPECTED_OBJECT_CLOSE);
 }
 
 static struct json_node parse_array(size_t *i) {
@@ -227,14 +228,14 @@ static struct json_node parse_array(size_t *i) {
 		switch (t->type) {
 		case TOKEN_TYPE_STRING:
 			if (!expecting_value) {
-				JSON_ERROR(JSON_ERROR_NOT_EXPECTING_VALUE);
+				JSON_ERROR(JSON_ERROR_UNEXPECTED_STRING);
 			}
 			expecting_value = false;
 			child_nodes[node.data.array.value_count++] = parse_string(i);
 			break;
 		case TOKEN_TYPE_ARRAY_OPEN:
 			if (!expecting_value) {
-				JSON_ERROR(JSON_ERROR_NOT_EXPECTING_VALUE);
+				JSON_ERROR(JSON_ERROR_UNEXPECTED_ARRAY_OPEN);
 			}
 			expecting_value = false;
 			child_nodes[node.data.array.value_count++] = parse_array(i);
@@ -247,13 +248,13 @@ static struct json_node parse_array(size_t *i) {
 			return node;
 		case TOKEN_TYPE_OBJECT_OPEN:
 			if (!expecting_value) {
-				JSON_ERROR(JSON_ERROR_NOT_EXPECTING_VALUE);
+				JSON_ERROR(JSON_ERROR_UNEXPECTED_OBJECT_OPEN);
 			}
 			expecting_value = false;
 			child_nodes[node.data.array.value_count++] = parse_object(i);
 			break;
 		case TOKEN_TYPE_OBJECT_CLOSE:
-			JSON_ERROR(JSON_ERROR_UNMATCHED_OBJECT_CLOSE);
+			JSON_ERROR(JSON_ERROR_UNEXPECTED_OBJECT_CLOSE);
 		case TOKEN_TYPE_COMMA:
 			if (expecting_value) {
 				JSON_ERROR(JSON_ERROR_UNEXPECTED_COMMA);
@@ -267,7 +268,7 @@ static struct json_node parse_array(size_t *i) {
 		(*i)++;
 	}
 
-	abort();
+	JSON_ERROR(JSON_ERROR_EXPECTED_ARRAY_CLOSE);
 }
 
 static struct json_node parse_string(size_t *i) {
@@ -292,11 +293,11 @@ static struct json_node parse(size_t *i) {
 	case TOKEN_TYPE_ARRAY_OPEN:
 		return parse_array(i);
 	case TOKEN_TYPE_ARRAY_CLOSE:
-		JSON_ERROR(JSON_ERROR_UNMATCHED_ARRAY_CLOSE);
+		JSON_ERROR(JSON_ERROR_UNEXPECTED_ARRAY_CLOSE);
 	case TOKEN_TYPE_OBJECT_OPEN:
 		return parse_object(i);
 	case TOKEN_TYPE_OBJECT_CLOSE:
-		JSON_ERROR(JSON_ERROR_UNMATCHED_OBJECT_CLOSE);
+		JSON_ERROR(JSON_ERROR_UNEXPECTED_OBJECT_CLOSE);
 	case TOKEN_TYPE_COMMA:
 		JSON_ERROR(JSON_ERROR_UNEXPECTED_COMMA);
 	case TOKEN_TYPE_COLON:
