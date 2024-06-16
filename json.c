@@ -41,6 +41,8 @@ char *json_error_messages[] = {
 	[JSON_ERROR_MAX_RECURSION_DEPTH_EXCEEDED] = "Max recursion depth exceeded",
 	[JSON_ERROR_EXPECTED_ARRAY_CLOSE] = "Expected ']'",
 	[JSON_ERROR_EXPECTED_OBJECT_CLOSE] = "Expected '}'",
+	[JSON_ERROR_EXPECTED_COLON] = "Expected colon",
+	[JSON_ERROR_EXPECTED_VALUE] = "Expected value",
 	[JSON_ERROR_UNEXPECTED_STRING] = "Unexpected string",
 	[JSON_ERROR_UNEXPECTED_ARRAY_OPEN] = "Unexpected '['",
 	[JSON_ERROR_UNEXPECTED_ARRAY_CLOSE] = "Unexpected ']'",
@@ -191,6 +193,11 @@ static struct json_node parse_object(size_t *i) {
 			}
 			break;
 		case TOKEN_TYPE_OBJECT_CLOSE:
+			if (seen_key && !seen_colon) {
+				JSON_ERROR(JSON_ERROR_EXPECTED_COLON);
+			} else if (seen_colon && !seen_value) {
+				JSON_ERROR(JSON_ERROR_EXPECTED_VALUE);
+			}
 			node.data.object.fields = fields + fields_size;
 			for (size_t i = 0; i < node.data.object.field_count; i++) {
 				push_field(child_fields[i]);

@@ -206,8 +206,16 @@ static void error_expected_array_close(void) {
 	ERROR_PARSE("./tests_err/expected_array_close.json", JSON_ERROR_EXPECTED_ARRAY_CLOSE);
 }
 
+static void error_expected_colon(void) {
+	ERROR_PARSE("./tests_err/expected_colon.json", JSON_ERROR_EXPECTED_COLON);
+}
+
 static void error_expected_object_close(void) {
 	ERROR_PARSE("./tests_err/expected_object_close.json", JSON_ERROR_EXPECTED_OBJECT_CLOSE);
+}
+
+static void error_expected_value(void) {
+	ERROR_PARSE("./tests_err/expected_value.json", JSON_ERROR_EXPECTED_VALUE);
 }
 
 static void error_failed_to_open_file(void) {
@@ -346,7 +354,9 @@ static void error_tests(void) {
 	error_failed_to_open_file();
 
 	error_expected_array_close();
+	error_expected_colon();
 	error_expected_object_close();
+	error_expected_value();
 	error_file_empty();
 	error_max_recursion_depth_array();
 	error_max_recursion_depth_object();
