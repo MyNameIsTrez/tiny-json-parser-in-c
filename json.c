@@ -32,6 +32,7 @@ char *json_error_messages[] = {
 	[JSON_ERROR_FILE_TOO_BIG] = "File is too big",
 	[JSON_ERROR_FILE_READING_ERROR] = "File reading error",
 	[JSON_ERROR_UNRECOGNIZED_CHARACTER] = "Unrecognized character",
+	[JSON_ERROR_UNCLOSED_STRING] = "Unclosed string",
 	[JSON_ERROR_TOO_MANY_TOKENS] = "Too many tokens",
 	[JSON_ERROR_TOO_MANY_NODES] = "Too many nodes",
 	[JSON_ERROR_TOO_MANY_FIELDS] = "Too many fields",
@@ -364,6 +365,10 @@ static void tokenize(void) {
 			JSON_ERROR(JSON_ERROR_UNRECOGNIZED_CHARACTER);
 		}
 		i++;
+	}
+
+	if (in_string) {
+		JSON_ERROR(JSON_ERROR_UNCLOSED_STRING);
 	}
 }
 

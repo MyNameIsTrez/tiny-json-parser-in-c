@@ -226,6 +226,10 @@ static void error_max_recursion_depth_object(void) {
 	ERROR_PARSE("./tests_err/max_recursion_depth_object.json", JSON_ERROR_MAX_RECURSION_DEPTH_EXCEEDED);
 }
 
+static void error_unclosed_string(void) {
+	ERROR_PARSE("./tests_err/unclosed_string.json", JSON_ERROR_UNCLOSED_STRING);
+}
+
 static void error_unexpected_array_close(void) {
 	ERROR_PARSE("./tests_err/unexpected_array_close.json", JSON_ERROR_UNEXPECTED_ARRAY_CLOSE);
 }
@@ -346,6 +350,7 @@ static void error_tests(void) {
 	error_file_empty();
 	error_max_recursion_depth_array();
 	error_max_recursion_depth_object();
+	error_unclosed_string();
 	error_unexpected_array_close();
 	error_unexpected_array_object_close();
 	error_unexpected_array_open_1();
