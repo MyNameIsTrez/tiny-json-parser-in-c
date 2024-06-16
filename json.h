@@ -64,4 +64,4 @@ extern int json_error_line_number;
 extern char *json_error_messages[];
 
 // Returns whether there was an error
-bool json_parse(char *json_file_path, struct json_node *returned);
+bool json(char *json_file_path, struct json_node *returned);

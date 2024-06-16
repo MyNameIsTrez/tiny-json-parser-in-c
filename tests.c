@@ -6,7 +6,7 @@
 #include <string.h>
 
 #define OK_PARSE(path, node) {\
-	assert(!json_parse(path, node) || (\
+	assert(!json(path, node) || (\
 			fprintf(\
 				stderr,\
 				"json.c:%d: %s in %s\n",\
@@ -17,7 +17,7 @@
 }
 
 #define ERROR_PARSE(path, error) {\
-	assert(json_parse(path, NULL));\
+	assert(json(path, NULL));\
 	assert(json_error == error);\
 }
 
