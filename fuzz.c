@@ -96,7 +96,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 	}
 
 	struct json_node node;
-	json_parse(file, &node);
+	json(file, &node);
 
 	if (delete_file(file) != 0) {
 		exit(EXIT_FAILURE);
