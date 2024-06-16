@@ -230,8 +230,12 @@ static void error_root_unmatched_object_close(void) {
 	ERROR_PARSE("./tests_err/root_unmatched_object_close.json", JSON_ERROR_UNMATCHED_OBJECT_CLOSE);
 }
 
-static void error_unrecognized_character(void) {
-	ERROR_PARSE("./tests_err/unrecognized_character.json", JSON_ERROR_UNRECOGNIZED_CHARACTER);
+static void error_unexpected_array_open_1(void) {
+	ERROR_PARSE("./tests_err/unexpected_array_open_1.json", JSON_ERROR_UNEXPECTED_ARRAY_OPEN);
+}
+
+static void error_unexpected_array_open_2(void) {
+	ERROR_PARSE("./tests_err/unexpected_array_open_2.json", JSON_ERROR_UNEXPECTED_ARRAY_OPEN);
 }
 
 static void error_unexpected_comma_array_1(void) {
@@ -248,6 +252,18 @@ static void error_unexpected_comma_object_1(void) {
 
 static void error_unexpected_comma_object_2(void) {
 	ERROR_PARSE("./tests_err/unexpected_comma_object_2.json", JSON_ERROR_UNEXPECTED_COMMA);
+}
+
+static void error_unexpected_string_1(void) {
+	ERROR_PARSE("./tests_err/unexpected_string_1.json", JSON_ERROR_UNEXPECTED_STRING);
+}
+
+static void error_unexpected_string_2(void) {
+	ERROR_PARSE("./tests_err/unexpected_string_2.json", JSON_ERROR_UNEXPECTED_STRING);
+}
+
+static void error_unrecognized_character(void) {
+	ERROR_PARSE("./tests_err/unrecognized_character.json", JSON_ERROR_UNRECOGNIZED_CHARACTER);
 }
 
 static void ok_tests(void) {
@@ -272,11 +288,15 @@ static void error_tests(void) {
 	error_object_unmatched_array_close();
 	error_root_unmatched_array_close();
 	error_root_unmatched_object_close();
-	error_unrecognized_character();
+	error_unexpected_array_open_1();
+	error_unexpected_array_open_2();
 	error_unexpected_comma_array_1();
 	error_unexpected_comma_array_2();
 	error_unexpected_comma_object_1();
 	error_unexpected_comma_object_2();
+	error_unexpected_string_1();
+	error_unexpected_string_2();
+	error_unrecognized_character();
 }
 
 int main(void) {

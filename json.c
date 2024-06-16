@@ -41,6 +41,8 @@ char *json_error_messages[] = {
 	[JSON_ERROR_MAX_RECURSION_DEPTH] = "JSON_ERROR_MAX_RECURSION_DEPTH",
 	[JSON_ERROR_OBJECT_FIELD] = "JSON_ERROR_OBJECT_FIELD",
 	[JSON_ERROR_NOT_EXPECTING_VALUE] = "JSON_ERROR_NOT_EXPECTING_VALUE",
+	[JSON_ERROR_UNEXPECTED_STRING] = "JSON_ERROR_UNEXPECTED_STRING",
+	[JSON_ERROR_UNEXPECTED_ARRAY_OPEN] = "JSON_ERROR_UNEXPECTED_ARRAY_OPEN",
 	[JSON_ERROR_UNEXPECTED_COMMA] = "JSON_ERROR_UNEXPECTED_COMMA",
 	[JSON_ERROR_UNEXPECTED_COLON] = "JSON_ERROR_UNEXPECTED_COLON",
 };
@@ -147,7 +149,7 @@ static struct json_node parse_object(size_t *i) {
 				push_node(string);
 				child_fields[node.data.object.field_count++] = field;
 			} else {
-				JSON_ERROR(JSON_ERROR_OBJECT_FIELD);
+				JSON_ERROR(JSON_ERROR_UNEXPECTED_STRING);
 			}
 			break;
 		case TOKEN_TYPE_ARRAY_OPEN:
@@ -158,7 +160,7 @@ static struct json_node parse_object(size_t *i) {
 				push_node(array);
 				child_fields[node.data.object.field_count++] = field;
 			} else {
-				JSON_ERROR(JSON_ERROR_OBJECT_FIELD);
+				JSON_ERROR(JSON_ERROR_UNEXPECTED_ARRAY_OPEN);
 			}
 			break;
 		case TOKEN_TYPE_ARRAY_CLOSE:
