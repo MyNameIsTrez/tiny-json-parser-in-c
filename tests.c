@@ -56,8 +56,8 @@ static void ok_grug(void) {
 	struct json_object foo_fn;
 	struct json_object bar_fn;
 	struct json_array fn_array;
-	struct json_array arguments;
 	struct json_field *field;
+	struct json_node *value;
 
 	assert(node.type == JSON_NODE_ARRAY);
 	fn_array = node.data.array;
@@ -88,12 +88,12 @@ static void ok_grug(void) {
 
 	assert(strcmp(field->key, "arguments") == 0);
 	assert(field->value->type == JSON_NODE_ARRAY);
-	arguments = field->value->data.array;
-	assert(arguments.value_count == 2);
+	value = field->value->data.array.values;
+	assert(field->value->data.array.value_count == 2);
 
-	assert(arguments.values[0].type == JSON_NODE_OBJECT);
-	assert(arguments.values[0].data.object.field_count == 2);
-	field = arguments.values[0].data.object.fields;
+	assert(value->type == JSON_NODE_OBJECT);
+	assert(value->data.object.field_count == 2);
+	field = value->data.object.fields;
 
 	assert(strcmp(field->key, "name") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
@@ -104,10 +104,11 @@ static void ok_grug(void) {
 	assert(field->value->type == JSON_NODE_STRING);
 	assert(strcmp(field->value->data.string, "i64") == 0);
 	field++;
+	value++;
 
-	assert(arguments.values[1].type == JSON_NODE_OBJECT);
-	assert(arguments.values[1].data.object.field_count == 2);
-	field = arguments.values[1].data.object.fields;
+	assert(value->type == JSON_NODE_OBJECT);
+	assert(value->data.object.field_count == 2);
+	field = value->data.object.fields;
 
 	assert(strcmp(field->key, "name") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
@@ -144,12 +145,12 @@ static void ok_grug(void) {
 
 	assert(strcmp(field->key, "arguments") == 0);
 	assert(field->value->type == JSON_NODE_ARRAY);
-	arguments = field->value->data.array;
-	assert(arguments.value_count == 1);
+	value = field->value->data.array.values;
+	assert(field->value->data.array.value_count == 1);
 
-	assert(arguments.values[0].type == JSON_NODE_OBJECT);
-	assert(arguments.values[0].data.object.field_count == 2);
-	field = arguments.values[0].data.object.fields;
+	assert(value->type == JSON_NODE_OBJECT);
+	assert(value->data.object.field_count == 2);
+	field = value->data.object.fields;
 
 	assert(strcmp(field->key, "name") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
