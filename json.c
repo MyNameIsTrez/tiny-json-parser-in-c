@@ -11,7 +11,7 @@
 #define MAX_STRINGS_CHARACTERS 420420
 #define MAX_NODES 420420
 #define MAX_FIELDS 420420
-#define MAX_NODES_PER_STACK_FRAME 1337
+#define MAX_CHILD_NODES 420
 #define MAX_RECURSION_DEPTH 42
 
 #define JSON_ERROR(error) {\
@@ -37,6 +37,7 @@ char *json_error_messages[] = {
 	[JSON_ERROR_TOO_MANY_NODES] = "Too many nodes",
 	[JSON_ERROR_TOO_MANY_FIELDS] = "Too many fields",
 	[JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS] = "Too many strings[] characters",
+	[JSON_ERROR_TOO_MANY_CHILD_NODES] = "Too many child nodes",
 	[JSON_ERROR_MAX_RECURSION_DEPTH_EXCEEDED] = "Max recursion depth exceeded",
 	[JSON_ERROR_EXPECTED_ARRAY_CLOSE] = "Expected ']'",
 	[JSON_ERROR_EXPECTED_OBJECT_CLOSE] = "Expected '}'",
@@ -86,14 +87,14 @@ static struct json_node parse_string(size_t *i);
 static struct json_node parse_array(size_t *i);
 
 static void push_node(struct json_node node) {
-	if (nodes_size + 1 > MAX_NODES) {
+	if (nodes_size >= MAX_NODES) {
 		JSON_ERROR(JSON_ERROR_TOO_MANY_NODES);
 	}
 	nodes[nodes_size++] = node;
 }
 
 static void push_field(struct json_field field) {
-	if (fields_size + 1 > MAX_FIELDS) {
+	if (fields_size >= MAX_FIELDS) {
 		JSON_ERROR(JSON_ERROR_TOO_MANY_FIELDS);
 	}
 	fields[fields_size++] = field;
@@ -122,7 +123,7 @@ static struct json_node parse_object(size_t *i) {
 
 	node.data.object.field_count = 0;
 
-	struct json_field child_fields[MAX_NODES_PER_STACK_FRAME];
+	struct json_field child_fields[MAX_CHILD_NODES];
 
 	bool seen_key = false;
 	bool seen_colon = false;
@@ -151,6 +152,9 @@ static struct json_node parse_object(size_t *i) {
 				string = parse_string(i);
 				field.value = nodes + nodes_size;
 				push_node(string);
+				if (node.data.object.field_count >= MAX_CHILD_NODES) {
+					JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
+				}
 				child_fields[node.data.object.field_count++] = field;
 			} else {
 				JSON_ERROR(JSON_ERROR_UNEXPECTED_STRING);
@@ -162,6 +166,9 @@ static struct json_node parse_object(size_t *i) {
 				array = parse_array(i);
 				field.value = nodes + nodes_size;
 				push_node(array);
+				if (node.data.object.field_count >= MAX_CHILD_NODES) {
+					JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
+				}
 				child_fields[node.data.object.field_count++] = field;
 			} else {
 				JSON_ERROR(JSON_ERROR_UNEXPECTED_ARRAY_OPEN);
@@ -175,6 +182,9 @@ static struct json_node parse_object(size_t *i) {
 				object = parse_object(i);
 				field.value = nodes + nodes_size;
 				push_node(object);
+				if (node.data.object.field_count >= MAX_CHILD_NODES) {
+					JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
+				}
 				child_fields[node.data.object.field_count++] = field;
 			} else {
 				JSON_ERROR(JSON_ERROR_UNEXPECTED_OBJECT_OPEN);
@@ -222,7 +232,7 @@ static struct json_node parse_array(size_t *i) {
 
 	node.data.array.value_count = 0;
 
-	struct json_node child_nodes[MAX_NODES_PER_STACK_FRAME];
+	struct json_node child_nodes[MAX_CHILD_NODES];
 
 	bool expecting_value = true;
 
@@ -235,6 +245,9 @@ static struct json_node parse_array(size_t *i) {
 				JSON_ERROR(JSON_ERROR_UNEXPECTED_STRING);
 			}
 			expecting_value = false;
+			if (node.data.array.value_count >= MAX_CHILD_NODES) {
+				JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
+			}
 			child_nodes[node.data.array.value_count++] = parse_string(i);
 			break;
 		case TOKEN_TYPE_ARRAY_OPEN:
@@ -242,6 +255,9 @@ static struct json_node parse_array(size_t *i) {
 				JSON_ERROR(JSON_ERROR_UNEXPECTED_ARRAY_OPEN);
 			}
 			expecting_value = false;
+			if (node.data.array.value_count >= MAX_CHILD_NODES) {
+				JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
+			}
 			child_nodes[node.data.array.value_count++] = parse_array(i);
 			break;
 		case TOKEN_TYPE_ARRAY_CLOSE:
@@ -256,6 +272,9 @@ static struct json_node parse_array(size_t *i) {
 				JSON_ERROR(JSON_ERROR_UNEXPECTED_OBJECT_OPEN);
 			}
 			expecting_value = false;
+			if (node.data.array.value_count >= MAX_CHILD_NODES) {
+				JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
+			}
 			child_nodes[node.data.array.value_count++] = parse_object(i);
 			break;
 		case TOKEN_TYPE_OBJECT_CLOSE:
@@ -322,7 +341,7 @@ static struct json_node parse(size_t *i) {
 }
 
 static void push_token(enum token_type type, size_t offset, size_t length) {
-	if (tokens_size + 1 > MAX_TOKENS) {
+	if (tokens_size >= MAX_TOKENS) {
 		JSON_ERROR(JSON_ERROR_TOO_MANY_TOKENS);
 	}
 	tokens[tokens_size++] = (struct token){

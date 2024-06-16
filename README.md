@@ -1,6 +1,6 @@
 # Tiny JSON parser in C
 
-Parses a subset of [JSON](https://en.wikipedia.org/wiki/JSON) in roughly 420 lines of C, where only arrays, objects and strings are handled.
+Parses a subset of [JSON](https://en.wikipedia.org/wiki/JSON) in roughly 450 lines of C, where only arrays, objects and strings are handled.
 
 The [JSON spec](https://www.json.org/json-en.html) specifies that the other value types are `number`, `true`, `false` and `null`, but they can all be stored as strings. You could easily support these however by adding just a few dozen lines to `json.c`, so feel free to.
 
@@ -56,7 +56,7 @@ Uses [libFuzzer](https://llvm.org/docs/LibFuzzer.html), which requires [Clang](h
 
 ```bash
 clear && \
-clang json.c fuzz.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -Ofast -march=native -g -fsanitize=undefined,fuzzer && \
+clang json.c fuzz.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -Ofast -march=native -g -fsanitize=address,undefined,fuzzer && \
 mkdir -p test_corpus && \
 cp tests_err/* tests_ok/* test_corpus && \
 mkdir -p corpus && \
