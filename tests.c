@@ -250,6 +250,10 @@ static void error_unexpected_colon_2(void) {
 	ERROR_PARSE("./tests_err/unexpected_colon_2.json", JSON_ERROR_UNEXPECTED_COLON);
 }
 
+static void error_unexpected_colon_3(void) {
+	ERROR_PARSE("./tests_err/unexpected_colon_3.json", JSON_ERROR_UNEXPECTED_COLON);
+}
+
 static void error_unexpected_comma_array_1(void) {
 	ERROR_PARSE("./tests_err/unexpected_comma_array_1.json", JSON_ERROR_UNEXPECTED_COMMA);
 }
@@ -284,6 +288,10 @@ static void error_unexpected_object_open_1(void) {
 
 static void error_unexpected_object_open_2(void) {
 	ERROR_PARSE("./tests_err/unexpected_object_open_2.json", JSON_ERROR_UNEXPECTED_OBJECT_OPEN);
+}
+
+static void error_unexpected_object_open_3(void) {
+	ERROR_PARSE("./tests_err/unexpected_object_open_3.json", JSON_ERROR_UNEXPECTED_OBJECT_OPEN);
 }
 
 static void error_unexpected_string_1(void) {
@@ -329,6 +337,7 @@ static void error_tests(void) {
 	error_unexpected_array_open_3();
 	error_unexpected_colon_1();
 	error_unexpected_colon_2();
+	error_unexpected_colon_3();
 	error_unexpected_comma_array_1();
 	error_unexpected_comma_array_2();
 	error_unexpected_comma_object_1();
@@ -338,6 +347,7 @@ static void error_tests(void) {
 	error_unexpected_object_close();
 	error_unexpected_object_open_1();
 	error_unexpected_object_open_2();
+	error_unexpected_object_open_3();
 	error_unexpected_string_1();
 	error_unexpected_string_2();
 	error_unexpected_string_3();
