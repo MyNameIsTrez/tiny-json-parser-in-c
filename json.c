@@ -101,7 +101,7 @@ static void push_field(struct json_field field) {
 	fields[fields_size++] = field;
 }
 
-static char *push_string(size_t offset, size_t length) {
+static char *push_string(char *slice_start, size_t length) {
 	if (strings_size + length >= MAX_STRINGS_CHARACTERS) {
 		JSON_ERROR(JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS);
 	}
@@ -109,7 +109,7 @@ static char *push_string(size_t offset, size_t length) {
 	char *new_str = strings + strings_size;
 
 	for (size_t i = 0; i < length; i++) {
-		strings[strings_size++] = text[offset + i];
+		strings[strings_size++] = slice_start[i];
 	}
 	strings[strings_size++] = '\0';
 
@@ -352,7 +352,7 @@ static void push_token(enum token_type type, size_t offset, size_t length) {
 	}
 	tokens[tokens_size++] = (struct token){
 		.type = type,
-		.str = push_string(offset, length),
+		.str = push_string(text + offset, length),
 	};
 }
 
