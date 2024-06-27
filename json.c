@@ -70,8 +70,7 @@ enum token_type {
 
 struct token {
 	enum token_type type;
-	size_t offset;
-	size_t length;
+	char *str;
 };
 static struct token tokens[MAX_TOKENS];
 static size_t tokens_size;
@@ -102,14 +101,19 @@ static void push_field(struct json_field field) {
 	fields[fields_size++] = field;
 }
 
-static void push_string(size_t offset, size_t length) {
+static char *push_string(size_t offset, size_t length) {
 	if (strings_size + length >= MAX_STRINGS_CHARACTERS) {
 		JSON_ERROR(JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS);
 	}
+
+	char *new_str = strings + strings_size;
+
 	for (size_t i = 0; i < length; i++) {
 		strings[strings_size++] = text[offset + i];
 	}
 	strings[strings_size++] = '\0';
+
+	return new_str;
 }
 
 static struct json_node parse_object(size_t *i) {
@@ -144,8 +148,7 @@ static struct json_node parse_object(size_t *i) {
 		case TOKEN_TYPE_STRING:
 			if (!seen_key) {
 				seen_key = true;
-				field.key = strings + strings_size;
-				push_string(token->offset, token->length);
+				field.key = token->str;
 				(*i)++;
 			} else if (seen_colon && !seen_value) {
 				seen_value = true;
@@ -304,10 +307,8 @@ static struct json_node parse_string(size_t *i) {
 
 	node.type = JSON_NODE_STRING;
 
-	node.data.string = strings + strings_size;
-
-	struct token *t = tokens + *i;
-	push_string(t->offset, t->length);
+	struct token *token = tokens + *i;
+	node.data.string = token->str;
 
 	(*i)++;
 
@@ -351,8 +352,7 @@ static void push_token(enum token_type type, size_t offset, size_t length) {
 	}
 	tokens[tokens_size++] = (struct token){
 		.type = type,
-		.offset = offset,
-		.length = length,
+		.str = push_string(offset, length),
 	};
 }
 
