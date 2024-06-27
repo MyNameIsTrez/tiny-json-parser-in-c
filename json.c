@@ -132,21 +132,19 @@ static struct json_node parse_object(size_t *i) {
 	bool seen_value = false;
 
 	struct json_field field;
-	struct token *token;
 
 	struct json_node string;
 	struct json_node array;
 	struct json_node object;
 
 	while (*i < tokens_size) {
-		struct token *t = tokens + *i;
+		struct token *token = tokens + *i;
 
-		switch (t->type) {
+		switch (token->type) {
 		case TOKEN_TYPE_STRING:
 			if (!seen_key) {
 				seen_key = true;
 				field.key = strings + strings_size;
-				token = tokens + *i;
 				push_string(token->offset, token->length);
 				(*i)++;
 			} else if (seen_colon && !seen_value) {
@@ -244,9 +242,9 @@ static struct json_node parse_array(size_t *i) {
 	bool expecting_value = true;
 
 	while (*i < tokens_size) {
-		struct token *t = tokens + *i;
+		struct token *token = tokens + *i;
 
-		switch (t->type) {
+		switch (token->type) {
 		case TOKEN_TYPE_STRING:
 			if (!expecting_value) {
 				JSON_ERROR(JSON_ERROR_UNEXPECTED_STRING);
