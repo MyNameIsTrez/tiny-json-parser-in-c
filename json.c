@@ -2,8 +2,10 @@
 
 #include <ctype.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 
 #define MAX_CHARACTERS_IN_JSON_FILE 420420
@@ -33,6 +35,7 @@ char *json_error_messages[] = {
 	[JSON_ERROR_FILE_READING_ERROR] = "File reading error",
 	[JSON_ERROR_UNRECOGNIZED_CHARACTER] = "Unrecognized character",
 	[JSON_ERROR_UNCLOSED_STRING] = "Unclosed string",
+	[JSON_ERROR_DUPLICATE_KEY] = "Duplicate key",
 	[JSON_ERROR_TOO_MANY_TOKENS] = "Too many tokens",
 	[JSON_ERROR_TOO_MANY_NODES] = "Too many nodes",
 	[JSON_ERROR_TOO_MANY_FIELDS] = "Too many fields",
@@ -84,6 +87,9 @@ static size_t strings_size;
 struct json_field fields[MAX_FIELDS];
 static size_t fields_size;
 
+static uint32_t buckets[MAX_FIELDS];
+static uint32_t chains[MAX_FIELDS];
+
 static struct json_node parse_string(size_t *i);
 static struct json_node parse_array(size_t *i);
 
@@ -114,6 +120,56 @@ static char *push_string(char *slice_start, size_t length) {
 	strings[strings_size++] = '\0';
 
 	return new_str;
+}
+
+// From https://sourceware.org/git/?p=binutils-gdb.git;a=blob;f=bfd/elf.c#l193
+static uint32_t elf_hash(const char *namearg) {
+	uint32_t h = 0;
+
+	for (const unsigned char *name = (const unsigned char *) namearg; *name; name++) {
+		h = (h << 4) + *name;
+		h ^= (h >> 24) & 0xf0;
+	}
+
+	return h & 0x0fffffff;
+}
+
+static bool is_duplicate_key(struct json_field *child_fields, size_t field_count, char *key) {
+	uint32_t i = buckets[elf_hash(key) % field_count];
+
+	while (1) {
+		if (i == UINT32_MAX) {
+			return false;
+		}
+
+		if (strcmp(key, child_fields[i].key) == 0) {
+			break;
+		}
+
+		i = chains[i];
+	}
+
+	return true;
+}
+
+static void check_duplicate_keys(struct json_field *child_fields, size_t field_count) {
+	memset(buckets, UINT32_MAX, field_count * sizeof(uint32_t));
+
+	size_t chains_size = 0;
+
+	for (size_t i = 0; i < field_count; i++) {
+		char *key = child_fields[i].key;
+
+		if (is_duplicate_key(child_fields, field_count, key)) {
+			JSON_ERROR(JSON_ERROR_DUPLICATE_KEY);
+		}
+
+		uint32_t bucket_index = elf_hash(key) % field_count;
+
+		chains[chains_size++] = buckets[bucket_index];
+
+		buckets[bucket_index] = i;
+	}
 }
 
 static struct json_node parse_object(size_t *i) {
@@ -199,6 +255,7 @@ static struct json_node parse_object(size_t *i) {
 			} else if (seen_colon && !seen_value) {
 				JSON_ERROR(JSON_ERROR_EXPECTED_VALUE);
 			}
+			check_duplicate_keys(child_fields, node.data.object.field_count);
 			node.data.object.fields = fields + fields_size;
 			for (size_t i = 0; i < node.data.object.field_count; i++) {
 				push_field(child_fields[i]);

@@ -216,6 +216,10 @@ static void ok_string(void) {
 	assert(strcmp(node.data.string, "") == 0);
 }
 
+static void error_duplicate_key(void) {
+	ERROR_PARSE("./tests_err/duplicate_key.json", JSON_ERROR_DUPLICATE_KEY);
+}
+
 static void error_expected_array_close(void) {
 	ERROR_PARSE("./tests_err/expected_array_close.json", JSON_ERROR_EXPECTED_ARRAY_CLOSE);
 }
@@ -368,6 +372,7 @@ static void ok_tests(void) {
 static void error_tests(void) {
 	error_failed_to_open_file();
 
+	error_duplicate_key();
 	error_expected_array_close();
 	error_expected_colon();
 	error_expected_object_close();

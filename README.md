@@ -1,6 +1,6 @@
 # Tiny JSON parser in C
 
-Parses a subset of [JSON](https://en.wikipedia.org/wiki/JSON) in roughly 450 lines of C, where only arrays, objects and strings are handled.
+Parses a subset of [JSON](https://en.wikipedia.org/wiki/JSON) in roughly 500 lines of C, where only arrays, objects and strings are handled. It makes use of the array-based hash table I described in [this](https://mynameistrez.github.io/2024/06/19/array-based-hash-table-in-c.html) blog post to detect duplicate object keys.
 
 The [JSON spec](https://www.json.org/json-en.html) specifies that the other value types are `number`, `true`, `false` and `null`, but they can all be stored as strings. You could easily support these however by adding just a few dozen lines to `json.c`, so feel free to.
 
