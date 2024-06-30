@@ -204,6 +204,7 @@ static struct json_node parse_object(size_t *i) {
 				push_field(child_fields[i]);
 			}
 			(*i)++;
+			recursion_depth--;
 			return node;
 		case TOKEN_TYPE_COMMA:
 			if (!seen_value) {
@@ -274,6 +275,7 @@ static struct json_node parse_array(size_t *i) {
 				push_node(child_nodes[i]);
 			}
 			(*i)++;
+			recursion_depth--;
 			return node;
 		case TOKEN_TYPE_OBJECT_OPEN:
 			if (!expecting_value) {

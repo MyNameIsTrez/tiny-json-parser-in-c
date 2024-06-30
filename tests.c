@@ -170,6 +170,19 @@ static void ok_object_foo(void) {
 	assert(node.data.object.field_count == 1);
 }
 
+static void ok_object_wide_doesnt_trigger_max_recursion_depth(void) {
+	struct json_node node;
+	OK_PARSE("./tests_ok/object_wide_doesnt_trigger_max_recursion_depth.json", &node);
+	assert(node.type == JSON_NODE_ARRAY);
+	struct json_array array = node.data.array;
+	assert(array.value_count == 50);
+
+	for (size_t i = 0; i < array.value_count; i++) {
+		assert(array.values[i].type == JSON_NODE_ARRAY);
+		assert(array.values[i].data.array.value_count == 0);
+	}
+}
+
 static void ok_object_within_max_recursion_depth(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/object_within_max_recursion_depth.json", &node);
@@ -345,6 +358,7 @@ static void ok_tests(void) {
 	ok_array();
 	ok_grug();
 	ok_object_foo();
+	ok_object_wide_doesnt_trigger_max_recursion_depth();
 	ok_object_within_max_recursion_depth();
 	ok_object();
 	ok_string_foo();
