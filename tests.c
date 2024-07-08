@@ -17,7 +17,8 @@
 }
 
 #define ERROR_PARSE(path, error) {\
-	assert(json(path, NULL));\
+	struct json_node node;\
+	assert(json(path, &node));\
 	assert(json_error == error);\
 }
 
@@ -252,6 +253,14 @@ static void error_max_recursion_depth_object(void) {
 	ERROR_PARSE("./tests_err/max_recursion_depth_object.json", JSON_ERROR_MAX_RECURSION_DEPTH_EXCEEDED);
 }
 
+static void error_trailing_array_comma(void) {
+	ERROR_PARSE("./tests_err/trailing_array_comma.json", JSON_ERROR_TRAILING_COMMA);
+}
+
+static void error_trailing_object_comma(void) {
+	ERROR_PARSE("./tests_err/trailing_object_comma.json", JSON_ERROR_TRAILING_COMMA);
+}
+
 static void error_unclosed_string(void) {
 	ERROR_PARSE("./tests_err/unclosed_string.json", JSON_ERROR_UNCLOSED_STRING);
 }
@@ -380,6 +389,8 @@ static void error_tests(void) {
 	error_file_empty();
 	error_max_recursion_depth_array();
 	error_max_recursion_depth_object();
+	error_trailing_array_comma();
+	error_trailing_object_comma();
 	error_unclosed_string();
 	error_unexpected_array_close();
 	error_unexpected_array_object_close();

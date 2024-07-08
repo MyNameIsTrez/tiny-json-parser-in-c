@@ -43,7 +43,7 @@ Make sure to install [gcovr](https://gcovr.com/en/stable/installation.html) firs
 
 ```bash
 clear && \
-gcc json.c tests.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -g --coverage && \
+gcc json.c tests.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -g -fsanitize=address,undefined --coverage && \
 ./a.out && \
 gcovr --html-details coverage.html
 ```

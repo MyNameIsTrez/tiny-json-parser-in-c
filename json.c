@@ -42,6 +42,7 @@ char *json_error_messages[] = {
 	[JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS] = "Too many strings[] characters",
 	[JSON_ERROR_TOO_MANY_CHILD_NODES] = "Too many child nodes",
 	[JSON_ERROR_MAX_RECURSION_DEPTH_EXCEEDED] = "Max recursion depth exceeded",
+	[JSON_ERROR_TRAILING_COMMA] = "Trailing comma",
 	[JSON_ERROR_EXPECTED_ARRAY_CLOSE] = "Expected ']'",
 	[JSON_ERROR_EXPECTED_OBJECT_CLOSE] = "Expected '}'",
 	[JSON_ERROR_EXPECTED_COLON] = "Expected colon",
@@ -190,6 +191,7 @@ static struct json_node parse_object(size_t *i) {
 	bool seen_key = false;
 	bool seen_colon = false;
 	bool seen_value = false;
+	bool seen_comma = false;
 
 	struct json_field field;
 
@@ -208,6 +210,7 @@ static struct json_node parse_object(size_t *i) {
 				(*i)++;
 			} else if (seen_colon && !seen_value) {
 				seen_value = true;
+				seen_comma = false;
 				string = parse_string(i);
 				field.value = nodes + nodes_size;
 				push_node(string);
@@ -222,6 +225,7 @@ static struct json_node parse_object(size_t *i) {
 		case TOKEN_TYPE_ARRAY_OPEN:
 			if (seen_colon && !seen_value) {
 				seen_value = true;
+				seen_comma = false;
 				array = parse_array(i);
 				field.value = nodes + nodes_size;
 				push_node(array);
@@ -238,6 +242,7 @@ static struct json_node parse_object(size_t *i) {
 		case TOKEN_TYPE_OBJECT_OPEN:
 			if (seen_colon && !seen_value) {
 				seen_value = true;
+				seen_comma = false;
 				object = parse_object(i);
 				field.value = nodes + nodes_size;
 				push_node(object);
@@ -254,6 +259,8 @@ static struct json_node parse_object(size_t *i) {
 				JSON_ERROR(JSON_ERROR_EXPECTED_COLON);
 			} else if (seen_colon && !seen_value) {
 				JSON_ERROR(JSON_ERROR_EXPECTED_VALUE);
+			} else if (seen_comma) {
+				JSON_ERROR(JSON_ERROR_TRAILING_COMMA);
 			}
 			check_duplicate_keys(child_fields, node.data.object.field_count);
 			node.data.object.fields = fields + fields_size;
@@ -270,6 +277,7 @@ static struct json_node parse_object(size_t *i) {
 			seen_key = false;
 			seen_colon = false;
 			seen_value = false;
+			seen_comma = true;
 			(*i)++;
 			break;
 		case TOKEN_TYPE_COLON:
@@ -300,33 +308,39 @@ static struct json_node parse_array(size_t *i) {
 
 	struct json_node child_nodes[MAX_CHILD_NODES];
 
-	bool expecting_value = true;
+	bool seen_value = false;
+	bool seen_comma = false;
 
 	while (*i < tokens_size) {
 		struct token *token = tokens + *i;
 
 		switch (token->type) {
 		case TOKEN_TYPE_STRING:
-			if (!expecting_value) {
+			if (seen_value) {
 				JSON_ERROR(JSON_ERROR_UNEXPECTED_STRING);
 			}
-			expecting_value = false;
+			seen_value = true;
+			seen_comma = false;
 			if (node.data.array.value_count >= MAX_CHILD_NODES) {
 				JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
 			}
 			child_nodes[node.data.array.value_count++] = parse_string(i);
 			break;
 		case TOKEN_TYPE_ARRAY_OPEN:
-			if (!expecting_value) {
+			if (seen_value) {
 				JSON_ERROR(JSON_ERROR_UNEXPECTED_ARRAY_OPEN);
 			}
-			expecting_value = false;
+			seen_value = true;
+			seen_comma = false;
 			if (node.data.array.value_count >= MAX_CHILD_NODES) {
 				JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
 			}
 			child_nodes[node.data.array.value_count++] = parse_array(i);
 			break;
 		case TOKEN_TYPE_ARRAY_CLOSE:
+			if (seen_comma) {
+				JSON_ERROR(JSON_ERROR_TRAILING_COMMA);
+			}
 			node.data.array.values = nodes + nodes_size;
 			for (size_t i = 0; i < node.data.array.value_count; i++) {
 				push_node(child_nodes[i]);
@@ -335,10 +349,11 @@ static struct json_node parse_array(size_t *i) {
 			recursion_depth--;
 			return node;
 		case TOKEN_TYPE_OBJECT_OPEN:
-			if (!expecting_value) {
+			if (seen_value) {
 				JSON_ERROR(JSON_ERROR_UNEXPECTED_OBJECT_OPEN);
 			}
-			expecting_value = false;
+			seen_value = true;
+			seen_comma = false;
 			if (node.data.array.value_count >= MAX_CHILD_NODES) {
 				JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
 			}
@@ -347,10 +362,11 @@ static struct json_node parse_array(size_t *i) {
 		case TOKEN_TYPE_OBJECT_CLOSE:
 			JSON_ERROR(JSON_ERROR_UNEXPECTED_OBJECT_CLOSE);
 		case TOKEN_TYPE_COMMA:
-			if (expecting_value) {
+			if (!seen_value) {
 				JSON_ERROR(JSON_ERROR_UNEXPECTED_COMMA);
 			}
-			expecting_value = true;
+			seen_value = false;
+			seen_comma = true;
 			(*i)++;
 			break;
 		case TOKEN_TYPE_COLON:
