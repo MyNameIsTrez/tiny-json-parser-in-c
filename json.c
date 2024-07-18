@@ -16,7 +16,7 @@
 #define MAX_CHILD_NODES 420
 #define MAX_RECURSION_DEPTH 42
 
-#define JSON_ERROR(error) {\
+#define json_error(error) {\
 	json_error = error;\
 	json_error_line_number = __LINE__;\
 	longjmp(error_jmp_buffer, 1);\
@@ -96,21 +96,21 @@ static struct json_node parse_array(size_t *i);
 
 static void push_node(struct json_node node) {
 	if (nodes_size >= MAX_NODES) {
-		JSON_ERROR(JSON_ERROR_TOO_MANY_NODES);
+		json_error(JSON_ERROR_TOO_MANY_NODES);
 	}
 	nodes[nodes_size++] = node;
 }
 
 static void push_field(struct json_field field) {
 	if (fields_size >= MAX_FIELDS) {
-		JSON_ERROR(JSON_ERROR_TOO_MANY_FIELDS);
+		json_error(JSON_ERROR_TOO_MANY_FIELDS);
 	}
 	fields[fields_size++] = field;
 }
 
 static char *push_string(char *slice_start, size_t length) {
 	if (strings_size + length >= MAX_STRINGS_CHARACTERS) {
-		JSON_ERROR(JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS);
+		json_error(JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS);
 	}
 
 	char *new_str = strings + strings_size;
@@ -162,7 +162,7 @@ static void check_duplicate_keys(struct json_field *child_fields, size_t field_c
 		char *key = child_fields[i].key;
 
 		if (is_duplicate_key(child_fields, field_count, key)) {
-			JSON_ERROR(JSON_ERROR_DUPLICATE_KEY);
+			json_error(JSON_ERROR_DUPLICATE_KEY);
 		}
 
 		uint32_t bucket_index = elf_hash(key) % field_count;
@@ -181,7 +181,7 @@ static struct json_node parse_object(size_t *i) {
 
 	recursion_depth++;
 	if (recursion_depth > MAX_RECURSION_DEPTH) {
-		JSON_ERROR(JSON_ERROR_MAX_RECURSION_DEPTH_EXCEEDED);
+		json_error(JSON_ERROR_MAX_RECURSION_DEPTH_EXCEEDED);
 	}
 
 	node.data.object.field_count = 0;
@@ -215,11 +215,11 @@ static struct json_node parse_object(size_t *i) {
 				field.value = nodes + nodes_size;
 				push_node(string);
 				if (node.data.object.field_count >= MAX_CHILD_NODES) {
-					JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
+					json_error(JSON_ERROR_TOO_MANY_CHILD_NODES);
 				}
 				child_fields[node.data.object.field_count++] = field;
 			} else {
-				JSON_ERROR(JSON_ERROR_UNEXPECTED_STRING);
+				json_error(JSON_ERROR_UNEXPECTED_STRING);
 			}
 			break;
 		case TOKEN_TYPE_ARRAY_OPEN:
@@ -230,15 +230,15 @@ static struct json_node parse_object(size_t *i) {
 				field.value = nodes + nodes_size;
 				push_node(array);
 				if (node.data.object.field_count >= MAX_CHILD_NODES) {
-					JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
+					json_error(JSON_ERROR_TOO_MANY_CHILD_NODES);
 				}
 				child_fields[node.data.object.field_count++] = field;
 			} else {
-				JSON_ERROR(JSON_ERROR_UNEXPECTED_ARRAY_OPEN);
+				json_error(JSON_ERROR_UNEXPECTED_ARRAY_OPEN);
 			}
 			break;
 		case TOKEN_TYPE_ARRAY_CLOSE:
-			JSON_ERROR(JSON_ERROR_UNEXPECTED_ARRAY_CLOSE);
+			json_error(JSON_ERROR_UNEXPECTED_ARRAY_CLOSE);
 		case TOKEN_TYPE_OBJECT_OPEN:
 			if (seen_colon && !seen_value) {
 				seen_value = true;
@@ -247,20 +247,20 @@ static struct json_node parse_object(size_t *i) {
 				field.value = nodes + nodes_size;
 				push_node(object);
 				if (node.data.object.field_count >= MAX_CHILD_NODES) {
-					JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
+					json_error(JSON_ERROR_TOO_MANY_CHILD_NODES);
 				}
 				child_fields[node.data.object.field_count++] = field;
 			} else {
-				JSON_ERROR(JSON_ERROR_UNEXPECTED_OBJECT_OPEN);
+				json_error(JSON_ERROR_UNEXPECTED_OBJECT_OPEN);
 			}
 			break;
 		case TOKEN_TYPE_OBJECT_CLOSE:
 			if (seen_key && !seen_colon) {
-				JSON_ERROR(JSON_ERROR_EXPECTED_COLON);
+				json_error(JSON_ERROR_EXPECTED_COLON);
 			} else if (seen_colon && !seen_value) {
-				JSON_ERROR(JSON_ERROR_EXPECTED_VALUE);
+				json_error(JSON_ERROR_EXPECTED_VALUE);
 			} else if (seen_comma) {
-				JSON_ERROR(JSON_ERROR_TRAILING_COMMA);
+				json_error(JSON_ERROR_TRAILING_COMMA);
 			}
 			check_duplicate_keys(child_fields, node.data.object.field_count);
 			node.data.object.fields = fields + fields_size;
@@ -272,7 +272,7 @@ static struct json_node parse_object(size_t *i) {
 			return node;
 		case TOKEN_TYPE_COMMA:
 			if (!seen_value) {
-				JSON_ERROR(JSON_ERROR_UNEXPECTED_COMMA);
+				json_error(JSON_ERROR_UNEXPECTED_COMMA);
 			}
 			seen_key = false;
 			seen_colon = false;
@@ -282,7 +282,7 @@ static struct json_node parse_object(size_t *i) {
 			break;
 		case TOKEN_TYPE_COLON:
 			if (!seen_key) {
-				JSON_ERROR(JSON_ERROR_UNEXPECTED_COLON);
+				json_error(JSON_ERROR_UNEXPECTED_COLON);
 			}
 			seen_colon = true;
 			(*i)++;
@@ -290,7 +290,7 @@ static struct json_node parse_object(size_t *i) {
 		}
 	}
 
-	JSON_ERROR(JSON_ERROR_EXPECTED_OBJECT_CLOSE);
+	json_error(JSON_ERROR_EXPECTED_OBJECT_CLOSE);
 }
 
 static struct json_node parse_array(size_t *i) {
@@ -301,7 +301,7 @@ static struct json_node parse_array(size_t *i) {
 
 	recursion_depth++;
 	if (recursion_depth > MAX_RECURSION_DEPTH) {
-		JSON_ERROR(JSON_ERROR_MAX_RECURSION_DEPTH_EXCEEDED);
+		json_error(JSON_ERROR_MAX_RECURSION_DEPTH_EXCEEDED);
 	}
 
 	node.data.array.value_count = 0;
@@ -317,29 +317,29 @@ static struct json_node parse_array(size_t *i) {
 		switch (token->type) {
 		case TOKEN_TYPE_STRING:
 			if (seen_value) {
-				JSON_ERROR(JSON_ERROR_UNEXPECTED_STRING);
+				json_error(JSON_ERROR_UNEXPECTED_STRING);
 			}
 			seen_value = true;
 			seen_comma = false;
 			if (node.data.array.value_count >= MAX_CHILD_NODES) {
-				JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
+				json_error(JSON_ERROR_TOO_MANY_CHILD_NODES);
 			}
 			child_nodes[node.data.array.value_count++] = parse_string(i);
 			break;
 		case TOKEN_TYPE_ARRAY_OPEN:
 			if (seen_value) {
-				JSON_ERROR(JSON_ERROR_UNEXPECTED_ARRAY_OPEN);
+				json_error(JSON_ERROR_UNEXPECTED_ARRAY_OPEN);
 			}
 			seen_value = true;
 			seen_comma = false;
 			if (node.data.array.value_count >= MAX_CHILD_NODES) {
-				JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
+				json_error(JSON_ERROR_TOO_MANY_CHILD_NODES);
 			}
 			child_nodes[node.data.array.value_count++] = parse_array(i);
 			break;
 		case TOKEN_TYPE_ARRAY_CLOSE:
 			if (seen_comma) {
-				JSON_ERROR(JSON_ERROR_TRAILING_COMMA);
+				json_error(JSON_ERROR_TRAILING_COMMA);
 			}
 			node.data.array.values = nodes + nodes_size;
 			for (size_t i = 0; i < node.data.array.value_count; i++) {
@@ -350,31 +350,31 @@ static struct json_node parse_array(size_t *i) {
 			return node;
 		case TOKEN_TYPE_OBJECT_OPEN:
 			if (seen_value) {
-				JSON_ERROR(JSON_ERROR_UNEXPECTED_OBJECT_OPEN);
+				json_error(JSON_ERROR_UNEXPECTED_OBJECT_OPEN);
 			}
 			seen_value = true;
 			seen_comma = false;
 			if (node.data.array.value_count >= MAX_CHILD_NODES) {
-				JSON_ERROR(JSON_ERROR_TOO_MANY_CHILD_NODES);
+				json_error(JSON_ERROR_TOO_MANY_CHILD_NODES);
 			}
 			child_nodes[node.data.array.value_count++] = parse_object(i);
 			break;
 		case TOKEN_TYPE_OBJECT_CLOSE:
-			JSON_ERROR(JSON_ERROR_UNEXPECTED_OBJECT_CLOSE);
+			json_error(JSON_ERROR_UNEXPECTED_OBJECT_CLOSE);
 		case TOKEN_TYPE_COMMA:
 			if (!seen_value) {
-				JSON_ERROR(JSON_ERROR_UNEXPECTED_COMMA);
+				json_error(JSON_ERROR_UNEXPECTED_COMMA);
 			}
 			seen_value = false;
 			seen_comma = true;
 			(*i)++;
 			break;
 		case TOKEN_TYPE_COLON:
-			JSON_ERROR(JSON_ERROR_UNEXPECTED_COLON);
+			json_error(JSON_ERROR_UNEXPECTED_COLON);
 		}
 	}
 
-	JSON_ERROR(JSON_ERROR_EXPECTED_ARRAY_CLOSE);
+	json_error(JSON_ERROR_EXPECTED_ARRAY_CLOSE);
 }
 
 static struct json_node parse_string(size_t *i) {
@@ -402,20 +402,20 @@ static struct json_node parse(size_t *i) {
 		node = parse_array(i);
 		break;
 	case TOKEN_TYPE_ARRAY_CLOSE:
-		JSON_ERROR(JSON_ERROR_UNEXPECTED_ARRAY_CLOSE);
+		json_error(JSON_ERROR_UNEXPECTED_ARRAY_CLOSE);
 	case TOKEN_TYPE_OBJECT_OPEN:
 		node = parse_object(i);
 		break;
 	case TOKEN_TYPE_OBJECT_CLOSE:
-		JSON_ERROR(JSON_ERROR_UNEXPECTED_OBJECT_CLOSE);
+		json_error(JSON_ERROR_UNEXPECTED_OBJECT_CLOSE);
 	case TOKEN_TYPE_COMMA:
-		JSON_ERROR(JSON_ERROR_UNEXPECTED_COMMA);
+		json_error(JSON_ERROR_UNEXPECTED_COMMA);
 	case TOKEN_TYPE_COLON:
-		JSON_ERROR(JSON_ERROR_UNEXPECTED_COLON);
+		json_error(JSON_ERROR_UNEXPECTED_COLON);
 	}
 
 	if (*i < tokens_size) {
-		JSON_ERROR(JSON_ERROR_UNEXPECTED_EXTRA_CHARACTER);
+		json_error(JSON_ERROR_UNEXPECTED_EXTRA_CHARACTER);
 	}
 
 	return node;
@@ -423,7 +423,7 @@ static struct json_node parse(size_t *i) {
 
 static void push_token(enum token_type type, size_t offset, size_t length) {
 	if (tokens_size >= MAX_TOKENS) {
-		JSON_ERROR(JSON_ERROR_TOO_MANY_TOKENS);
+		json_error(JSON_ERROR_TOO_MANY_TOKENS);
 	}
 	tokens[tokens_size++] = (struct token){
 		.type = type,
@@ -461,20 +461,20 @@ static void tokenize(void) {
 		} else if (text[i] == ':') {
 			push_token(TOKEN_TYPE_COLON, i, 1);
 		} else if (!isspace(text[i]) && !in_string) {
-			JSON_ERROR(JSON_ERROR_UNRECOGNIZED_CHARACTER);
+			json_error(JSON_ERROR_UNRECOGNIZED_CHARACTER);
 		}
 		i++;
 	}
 
 	if (in_string) {
-		JSON_ERROR(JSON_ERROR_UNCLOSED_STRING);
+		json_error(JSON_ERROR_UNCLOSED_STRING);
 	}
 }
 
 static void read_text(char *json_file_path) {
 	FILE *f = fopen(json_file_path, "r");
 	if (!f) {
-		JSON_ERROR(JSON_ERROR_FAILED_TO_OPEN_FILE);
+		json_error(JSON_ERROR_FAILED_TO_OPEN_FILE);
 	}
 
 	text_size = fread(
@@ -488,17 +488,17 @@ static void read_text(char *json_file_path) {
 	int err = ferror(f);
 
     if (fclose(f)) {
-		JSON_ERROR(JSON_ERROR_FAILED_TO_CLOSE_FILE);
+		json_error(JSON_ERROR_FAILED_TO_CLOSE_FILE);
     }
 
 	if (text_size == 0) {
-		JSON_ERROR(JSON_ERROR_FILE_EMPTY);
+		json_error(JSON_ERROR_FILE_EMPTY);
 	}
 	if (!is_eof || text_size == MAX_CHARACTERS_IN_JSON_FILE) {
-		JSON_ERROR(JSON_ERROR_FILE_TOO_BIG);
+		json_error(JSON_ERROR_FILE_TOO_BIG);
 	}
 	if (err) {
-		JSON_ERROR(JSON_ERROR_FILE_READING_ERROR);
+		json_error(JSON_ERROR_FILE_READING_ERROR);
 	}
 
 	text[text_size] = '\0';
