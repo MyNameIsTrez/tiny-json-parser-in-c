@@ -50,6 +50,13 @@ static void ok_array(void) {
 	assert(node.data.array.value_count == 0);
 }
 
+static void ok_comma_in_string(void) {
+	struct json_node node;
+	OK_PARSE("./tests_ok/comma_in_string.json", &node);
+	assert(node.type == JSON_NODE_STRING);
+	assert(strcmp(node.data.string, ",") == 0);
+}
+
 static void ok_grug(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/grug.json", &node);
@@ -369,6 +376,7 @@ static void ok_tests(void) {
 	ok_array_in_array();
 	ok_array_within_max_recursion_depth();
 	ok_array();
+	ok_comma_in_string();
 	ok_grug();
 	ok_object_foo();
 	ok_object_wide_doesnt_trigger_max_recursion_depth();
