@@ -52,7 +52,7 @@ You can then view the generated `coverage.html` in your browser. You should see 
 
 ## Fuzzing
 
-Uses [libFuzzer](https://llvm.org/docs/LibFuzzer.html), which requires [Clang](https://en.wikipedia.org/wiki/Clang) to be installed.
+This uses [libFuzzer](https://llvm.org/docs/LibFuzzer.html), which requires [Clang](https://en.wikipedia.org/wiki/Clang) to be installed.
 
 ```bash
 clear && \
