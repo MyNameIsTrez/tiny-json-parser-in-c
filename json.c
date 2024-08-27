@@ -154,7 +154,7 @@ static bool is_duplicate_key(struct json_field *child_fields, size_t field_count
 }
 
 static void check_duplicate_keys(struct json_field *child_fields, size_t field_count) {
-	memset(buckets, UINT32_MAX, field_count * sizeof(uint32_t));
+	memset(buckets, 0xff, field_count * sizeof(uint32_t));
 
 	size_t chains_size = 0;
 
@@ -254,8 +254,8 @@ static struct json_node parse_object(size_t *i) {
 			}
 			check_duplicate_keys(child_fields, node.data.object.field_count);
 			node.data.object.fields = fields + fields_size;
-			for (size_t i = 0; i < node.data.object.field_count; i++) {
-				push_field(child_fields[i]);
+			for (size_t field_index = 0; field_index < node.data.object.field_count; field_index++) {
+				push_field(child_fields[field_index]);
 			}
 			(*i)++;
 			recursion_depth--;
@@ -316,8 +316,8 @@ static struct json_node parse_array(size_t *i) {
 		case TOKEN_TYPE_ARRAY_CLOSE:
 			json_assert(!seen_comma, JSON_ERROR_TRAILING_COMMA);
 			node.data.array.values = nodes + nodes_size;
-			for (size_t i = 0; i < node.data.array.value_count; i++) {
-				push_node(child_nodes[i]);
+			for (size_t value_index = 0; value_index < node.data.array.value_count; value_index++) {
+				push_node(child_nodes[value_index]);
 			}
 			(*i)++;
 			recursion_depth--;
