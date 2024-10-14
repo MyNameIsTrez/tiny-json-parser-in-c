@@ -28,7 +28,7 @@ struct json_node {
 		char *string;
 		struct json_array array;
 		struct json_object object;
-	} data;
+	};
 };
 
 enum json_error {

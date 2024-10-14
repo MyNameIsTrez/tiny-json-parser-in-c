@@ -26,9 +26,9 @@ static void ok_array_in_array(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/array_in_array.json", &node);
 	assert(node.type == JSON_NODE_ARRAY);
-	assert(node.data.array.value_count == 1);
-	assert(node.data.array.values[0].type == JSON_NODE_ARRAY);
-	assert(node.data.array.values[0].data.array.value_count == 0);
+	assert(node.array.value_count == 1);
+	assert(node.array.values[0].type == JSON_NODE_ARRAY);
+	assert(node.array.values[0].array.value_count == 0);
 }
 
 static void ok_array_within_max_recursion_depth(void) {
@@ -36,25 +36,25 @@ static void ok_array_within_max_recursion_depth(void) {
 	OK_PARSE("./tests_ok/array_within_max_recursion_depth.json", &node);
 	for (size_t i = 0; i < 41; i++) {
 		assert(node.type == JSON_NODE_ARRAY);
-		assert(node.data.array.value_count == 1);
-		node = node.data.array.values[0];
+		assert(node.array.value_count == 1);
+		node = node.array.values[0];
 	}
 	assert(node.type == JSON_NODE_ARRAY);
-	assert(node.data.array.value_count == 0);
+	assert(node.array.value_count == 0);
 }
 
 static void ok_array(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/array.json", &node);
 	assert(node.type == JSON_NODE_ARRAY);
-	assert(node.data.array.value_count == 0);
+	assert(node.array.value_count == 0);
 }
 
 static void ok_comma_in_string(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/comma_in_string.json", &node);
 	assert(node.type == JSON_NODE_STRING);
-	assert(strcmp(node.data.string, ",") == 0);
+	assert(strcmp(node.string, ",") == 0);
 }
 
 static void ok_grug(void) {
@@ -68,106 +68,106 @@ static void ok_grug(void) {
 	struct json_node *value;
 
 	assert(node.type == JSON_NODE_ARRAY);
-	fn_array = node.data.array;
+	fn_array = node.array;
 	assert(fn_array.value_count == 2);
 
 	// foo fn
 
 	assert(fn_array.values[0].type == JSON_NODE_OBJECT);
-	foo_fn = fn_array.values[0].data.object;
+	foo_fn = fn_array.values[0].object;
 	assert(foo_fn.field_count == 4);
 
 	field = foo_fn.fields;
 
 	assert(strcmp(field->key, "name") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
-	assert(strcmp(field->value->data.string, "foo") == 0);
+	assert(strcmp(field->value->string, "foo") == 0);
 	field++;
 
 	assert(strcmp(field->key, "description") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
-	assert(strcmp(field->value->data.string, "deez") == 0);
+	assert(strcmp(field->value->string, "deez") == 0);
 	field++;
 
 	assert(strcmp(field->key, "return_type") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
-	assert(strcmp(field->value->data.string, "i32") == 0);
+	assert(strcmp(field->value->string, "i32") == 0);
 	field++;
 
 	assert(strcmp(field->key, "arguments") == 0);
 	assert(field->value->type == JSON_NODE_ARRAY);
-	value = field->value->data.array.values;
-	assert(field->value->data.array.value_count == 2);
+	value = field->value->array.values;
+	assert(field->value->array.value_count == 2);
 
 	assert(value->type == JSON_NODE_OBJECT);
-	assert(value->data.object.field_count == 2);
-	field = value->data.object.fields;
+	assert(value->object.field_count == 2);
+	field = value->object.fields;
 
 	assert(strcmp(field->key, "name") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
-	assert(strcmp(field->value->data.string, "a") == 0);
+	assert(strcmp(field->value->string, "a") == 0);
 	field++;
 
 	assert(strcmp(field->key, "type") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
-	assert(strcmp(field->value->data.string, "i64") == 0);
+	assert(strcmp(field->value->string, "i64") == 0);
 	field++;
 	value++;
 
 	assert(value->type == JSON_NODE_OBJECT);
-	assert(value->data.object.field_count == 2);
-	field = value->data.object.fields;
+	assert(value->object.field_count == 2);
+	field = value->object.fields;
 
 	assert(strcmp(field->key, "name") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
-	assert(strcmp(field->value->data.string, "b") == 0);
+	assert(strcmp(field->value->string, "b") == 0);
 	field++;
 
 	assert(strcmp(field->key, "type") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
-	assert(strcmp(field->value->data.string, "i64") == 0);
+	assert(strcmp(field->value->string, "i64") == 0);
 	field++;
 
 	// bar fn
 
 	assert(fn_array.values[1].type == JSON_NODE_OBJECT);
-	bar_fn = fn_array.values[1].data.object;
+	bar_fn = fn_array.values[1].object;
 	assert(bar_fn.field_count == 4);
 
 	field = bar_fn.fields;
 
 	assert(strcmp(field->key, "name") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
-	assert(strcmp(field->value->data.string, "bar") == 0);
+	assert(strcmp(field->value->string, "bar") == 0);
 	field++;
 
 	assert(strcmp(field->key, "description") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
-	assert(strcmp(field->value->data.string, "nuts") == 0);
+	assert(strcmp(field->value->string, "nuts") == 0);
 	field++;
 
 	assert(strcmp(field->key, "return_type") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
-	assert(strcmp(field->value->data.string, "f32") == 0);
+	assert(strcmp(field->value->string, "f32") == 0);
 	field++;
 
 	assert(strcmp(field->key, "arguments") == 0);
 	assert(field->value->type == JSON_NODE_ARRAY);
-	value = field->value->data.array.values;
-	assert(field->value->data.array.value_count == 1);
+	value = field->value->array.values;
+	assert(field->value->array.value_count == 1);
 
 	assert(value->type == JSON_NODE_OBJECT);
-	assert(value->data.object.field_count == 2);
-	field = value->data.object.fields;
+	assert(value->object.field_count == 2);
+	field = value->object.fields;
 
 	assert(strcmp(field->key, "name") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
-	assert(strcmp(field->value->data.string, "x") == 0);
+	assert(strcmp(field->value->string, "x") == 0);
 	field++;
 
 	assert(strcmp(field->key, "type") == 0);
 	assert(field->value->type == JSON_NODE_STRING);
-	assert(strcmp(field->value->data.string, "i32") == 0);
+	assert(strcmp(field->value->string, "i32") == 0);
 	field++;
 }
 
@@ -175,19 +175,19 @@ static void ok_object_foo(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/object_foo.json", &node);
 	assert(node.type == JSON_NODE_OBJECT);
-	assert(node.data.object.field_count == 1);
+	assert(node.object.field_count == 1);
 }
 
 static void ok_object_wide_doesnt_trigger_max_recursion_depth(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/object_wide_doesnt_trigger_max_recursion_depth.json", &node);
 	assert(node.type == JSON_NODE_ARRAY);
-	struct json_array array = node.data.array;
+	struct json_array array = node.array;
 	assert(array.value_count == 50);
 
 	for (size_t i = 0; i < array.value_count; i++) {
 		assert(array.values[i].type == JSON_NODE_ARRAY);
-		assert(array.values[i].data.array.value_count == 0);
+		assert(array.values[i].array.value_count == 0);
 	}
 }
 
@@ -196,32 +196,32 @@ static void ok_object_within_max_recursion_depth(void) {
 	OK_PARSE("./tests_ok/object_within_max_recursion_depth.json", &node);
 	for (size_t i = 0; i < 41; i++) {
 		assert(node.type == JSON_NODE_OBJECT);
-		assert(node.data.object.field_count == 1);
-		node = *node.data.object.fields[0].value;
+		assert(node.object.field_count == 1);
+		node = *node.object.fields[0].value;
 	}
 	assert(node.type == JSON_NODE_OBJECT);
-	assert(node.data.object.field_count == 0);
+	assert(node.object.field_count == 0);
 }
 
 static void ok_object(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/object.json", &node);
 	assert(node.type == JSON_NODE_OBJECT);
-	assert(node.data.object.field_count == 0);
+	assert(node.object.field_count == 0);
 }
 
 static void ok_string_foo(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/string_foo.json", &node);
 	assert(node.type == JSON_NODE_STRING);
-	assert(strcmp(node.data.string, "foo") == 0);
+	assert(strcmp(node.string, "foo") == 0);
 }
 
 static void ok_string(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/string.json", &node);
 	assert(node.type == JSON_NODE_STRING);
-	assert(strcmp(node.data.string, "") == 0);
+	assert(strcmp(node.string, "") == 0);
 }
 
 static void error_duplicate_key(void) {
