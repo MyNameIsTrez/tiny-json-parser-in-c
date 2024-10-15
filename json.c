@@ -85,13 +85,13 @@ struct token {
 static struct token tokens[MAX_TOKENS];
 static size_t tokens_size;
 
-struct json_node nodes[MAX_NODES];
+static struct json_node nodes[MAX_NODES];
 static size_t nodes_size;
 
 static char strings[MAX_STRINGS_CHARACTERS];
 static size_t strings_size;
 
-struct json_field fields[MAX_FIELDS];
+static struct json_field fields[MAX_FIELDS];
 static size_t fields_size;
 
 static uint32_t buckets[MAX_FIELDS];
