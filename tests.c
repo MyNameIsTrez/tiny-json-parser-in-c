@@ -430,4 +430,5 @@ static void error_tests(void) {
 int main(void) {
 	error_tests();
 	ok_tests();
+	printf("All tests passed!\n");
 }
