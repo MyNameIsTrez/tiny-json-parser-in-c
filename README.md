@@ -37,12 +37,25 @@ The motivation for writing this program was that my tiny programming language ca
 ]
 ```
 
-## Running the tests, and generating coverage
+## Running the tests
+
+```bash
+gcc json.c tests.c && \
+./a.out
+```
+
+and if you want to let the compiler do more checks:
+
+```bash
+gcc json.c tests.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -g -fsanitize=address,undefined && \
+./a.out
+```
+
+## Generating coverage
 
 Make sure to install [gcovr](https://gcovr.com/en/stable/installation.html) first.
 
 ```bash
-clear && \
 gcc json.c tests.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -g -fsanitize=address,undefined --coverage && \
 ./a.out && \
 gcovr --html-details coverage.html
@@ -55,7 +68,6 @@ You can then view the generated `coverage.html` in your browser. You should see 
 This uses [libFuzzer](https://llvm.org/docs/LibFuzzer.html), which requires [Clang](https://en.wikipedia.org/wiki/Clang) to be installed.
 
 ```bash
-clear && \
 clang json.c fuzz.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -Ofast -march=native -g -fsanitize=address,undefined,fuzzer && \
 mkdir -p test_corpus && \
 cp tests_err/* tests_ok/* test_corpus && \
