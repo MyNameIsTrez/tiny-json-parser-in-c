@@ -31,8 +31,9 @@ struct json_node {
 	};
 };
 
-enum json_error {
-	JSON_NO_ERROR,
+enum json_status {
+	JSON_OK,
+	JSON_ERROR_OUT_OF_MEMORY,
 	JSON_ERROR_FAILED_TO_OPEN_FILE,
 	JSON_ERROR_FAILED_TO_CLOSE_FILE,
 	JSON_ERROR_FILE_EMPTY,
@@ -41,10 +42,6 @@ enum json_error {
 	JSON_ERROR_UNRECOGNIZED_CHARACTER,
 	JSON_ERROR_UNCLOSED_STRING,
 	JSON_ERROR_DUPLICATE_KEY,
-	JSON_ERROR_TOO_MANY_TOKENS,
-	JSON_ERROR_TOO_MANY_NODES,
-	JSON_ERROR_TOO_MANY_FIELDS,
-	JSON_ERROR_TOO_MANY_STRINGS_CHARACTERS,
 	JSON_ERROR_TOO_MANY_CHILD_NODES,
 	JSON_ERROR_MAX_RECURSION_DEPTH_EXCEEDED,
 	JSON_ERROR_TRAILING_COMMA,
@@ -62,9 +59,7 @@ enum json_error {
 	JSON_ERROR_UNEXPECTED_EXTRA_CHARACTER,
 };
 
-extern enum json_error json_error;
 extern int json_error_line_number;
 extern char *json_error_messages[];
 
-// Returns whether there was an error
-bool json(char *json_file_path, struct json_node *returned);
+enum json_status json(char *json_file_path, struct json_node *returned, void *buffer, size_t buffer_size);

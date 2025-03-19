@@ -5,21 +5,43 @@
 #include <stdlib.h>
 #include <string.h>
 
+static char buffer[420420];
+
 #define OK_PARSE(path, node) {\
-	assert(!json(path, node) || (\
-			fprintf(\
-				stderr,\
-				"json.c:%d: %s in %s\n",\
-				json_error_line_number,\
-				json_error_messages[json_error],\
-				path\
-			), abort(), false));\
+	memset(buffer, 0, sizeof(buffer));\
+	enum json_status status;\
+    do {\
+		status = json(path, node, buffer, sizeof(buffer));\
+    } while (status == JSON_ERROR_OUT_OF_MEMORY);\
+	if (status) {\
+		fprintf(\
+			stderr,\
+			"json.c:%d: %s in %s\n",\
+			json_error_line_number,\
+			json_error_messages[status],\
+			path\
+		);\
+		abort();\
+	}\
 }
 
 #define ERROR_PARSE(path, error) {\
+	memset(buffer, 0, sizeof(buffer));\
 	struct json_node node;\
-	assert(json(path, &node));\
-	assert(json_error == error);\
+    enum json_status status;\
+    do {\
+        status = json(path, &node, buffer, sizeof(buffer));\
+    } while (status == JSON_ERROR_OUT_OF_MEMORY);\
+	if (status != error) {\
+		fprintf(\
+			stderr,\
+			"json.c:%d: %s in %s\n",\
+			json_error_line_number,\
+			json_error_messages[status],\
+			path\
+		);\
+		abort();\
+	}\
 }
 
 static void ok_array_in_array(void) {
