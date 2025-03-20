@@ -12,7 +12,7 @@
 #define MAX_RECURSION_DEPTH 42
 
 #define json_error(error) {\
-	json_error_line_number = __LINE__;\
+	error_line_number = __LINE__;\
 	longjmp(error_jmp_buffer, error);\
 }
 
@@ -24,7 +24,7 @@
 
 static jmp_buf error_jmp_buffer;
 
-int json_error_line_number;
+static int error_line_number;
 
 enum token_type {
 	TOKEN_TYPE_STRING,
@@ -567,4 +567,8 @@ char *json_get_error_message(enum json_status status) {
 		[JSON_UNEXPECTED_EXTRA_CHARACTER] = "Unexpected extra character",
 	};
 	return messages[status];
+}
+
+int json_get_error_line_number(void) {
+	return error_line_number;
 }

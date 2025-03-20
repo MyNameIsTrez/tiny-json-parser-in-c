@@ -17,7 +17,7 @@ static char buffer[420420];
 		fprintf(\
 			stderr,\
 			"json.c:%d: %s in %s\n",\
-			json_error_line_number,\
+			json_get_error_line_number(),\
 			json_get_error_message(status),\
 			path\
 		);\
@@ -36,7 +36,7 @@ static char buffer[420420];
 		fprintf(\
 			stderr,\
 			"json.c:%d: %s in %s\n",\
-			json_error_line_number,\
+			json_get_error_line_number(),\
 			json_get_error_message(status),\
 			path\
 		);\
