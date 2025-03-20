@@ -62,5 +62,5 @@ enum json_status {
 extern int json_error_line_number;
 extern char *json_error_messages[];
 
-bool json_init(void *buffer, size_t buffer_size);
-enum json_status json(char *json_file_path, struct json_node *returned, void *buffer, size_t buffer_size);
+bool json_init(void *buffer, size_t buffer_size) __attribute__((warn_unused_result));
+enum json_status json(char *json_file_path, struct json_node *returned, void *buffer, size_t buffer_size) __attribute__((warn_unused_result));
