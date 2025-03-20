@@ -86,7 +86,7 @@ err:
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 	static bool initialized = false;
 	if (!initialized) {
-    	ignore_stdout();
+		ignore_stdout();
 		initialized = true;
 	}
 
@@ -95,8 +95,13 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 		exit(EXIT_FAILURE);
 	}
 
+	static char buffer[420420];
+
+	(void)json_init(buffer, sizeof(buffer));
+
 	struct json_node node;
-	json(file, &node);
+
+	(void)json(file, &node, buffer, sizeof(buffer));
 
 	if (delete_file(file) != 0) {
 		exit(EXIT_FAILURE);

@@ -116,7 +116,7 @@ clang json.c fuzz.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -Ofast -marc
 mkdir -p test_corpus && \
 cp tests_err/* tests_ok/* test_corpus && \
 mkdir -p corpus && \
-./a.out -merge=1 corpus test_corpus && \
+./a.out -timeout=1 corpus test_corpus && \
 ./a.out corpus
 ```
 
