@@ -60,7 +60,7 @@ Originally `json.c` was 481 lines long, which you can still view in the branch c
 
 It used static arrays with hardcoded sizes, which I described the advantages of in my blog post titled [Static arrays are the best vectors](https://mynameistrez.github.io/2024/04/09/static-arrays-are-the-best-vectors.html).
 
-There were two major problems with it:
+There were two problems with it:
 1. It didn't give the user control over how the memory was allocated.
 2. Whenever `json_parse()` was called, its static arrays would be reset. This meant that calling the function a second time would overwrite the previous call's JSON result. This was fine if you didn't need to open more than one JSON file at a time.
 
