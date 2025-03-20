@@ -46,6 +46,11 @@ int main() {
         }
     } while (status == JSON_OUT_OF_MEMORY);
 
+    if (status) {
+        // Handle error here
+        exit(EXIT_FAILURE);
+    }
+
     // You can now recursively walk the JSON data in the node variable here
 }
 ```
@@ -56,7 +61,19 @@ The [JSON spec](https://www.json.org/json-en.html) specifies that the other valu
 
 ## The old version that was smaller and simpler
 
-Originally `json.c` was 481 lines long, which you can still view in the branch called [static-arrays](https://github.com/MyNameIsTrez/tiny-allocationless-json-parser-in-c/tree/static-arrays).
+Originally `json.c` was 481 lines long, which you can still view in the branch called [static-arrays](https://github.com/MyNameIsTrez/tiny-allocationless-json-parser-in-c/tree/static-arrays):
+
+```c
+int main() {
+    struct json_node node;
+    if (json("foo.json", &node)) {
+        // Handle error here
+        exit(EXIT_FAILURE);
+    }
+
+    // You can now recursively walk the JSON data in the node variable here
+}
+```
 
 It used static arrays with hardcoded sizes, which I described the advantages of in my blog post titled [Static arrays are the best vectors](https://mynameistrez.github.io/2024/04/09/static-arrays-are-the-best-vectors.html).
 
