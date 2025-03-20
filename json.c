@@ -462,7 +462,7 @@ static void read_text(char *json_file_path) {
 
 	json_assert(g->text_used != 0, JSON_ERROR_FILE_EMPTY);
 
-	if (!is_eof || g->text_used == g->text_size) {
+	if (!is_eof) {
 		g->text_size *= 2;
 		json_error(JSON_ERROR_OUT_OF_MEMORY);
 	}
