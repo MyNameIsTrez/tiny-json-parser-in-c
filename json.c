@@ -478,12 +478,11 @@ static void check_buffer_used(size_t buffer_used, size_t buffer_size) {
     }
 }
 
-static void *get_next_aligned_area(void **buffer, size_t *buffer_used) {
+static void *get_next_aligned_area(void *buffer, size_t *buffer_used) {
     // Align buffer_used to 16 bytes
     *buffer_used += (16 - (*buffer_used % 16)) % 16;
 
-    *buffer = (char *)*buffer + *buffer_used;
-    return *buffer;
+    return (char *)buffer + *buffer_used;
 }
 
 static void allocate_arrays(void *buffer, size_t size) {
@@ -495,35 +494,35 @@ static void allocate_arrays(void *buffer, size_t size) {
 
 	size_t used = 0;
 
-	// Reserve space for the struct itself in the buffer
+	// Reserve space for the g struct itself in the buffer
 	used += sizeof(*g);
     check_buffer_used(used, size);
 
-	g->text = get_next_aligned_area(&buffer, &used);
+	g->text = get_next_aligned_area(buffer, &used);
 	used += g->text_size * sizeof(*g->text);
     check_buffer_used(used, size);
 
-	g->tokens = get_next_aligned_area(&buffer, &used);
+	g->tokens = get_next_aligned_area(buffer, &used);
 	used += g->tokens_size * sizeof(*g->tokens);
     check_buffer_used(used, size);
 
-	g->nodes = get_next_aligned_area(&buffer, &used);
+	g->nodes = get_next_aligned_area(buffer, &used);
 	used += g->nodes_size * sizeof(*g->nodes);
     check_buffer_used(used, size);
 
-	g->strings = get_next_aligned_area(&buffer, &used);
+	g->strings = get_next_aligned_area(buffer, &used);
 	used += g->strings_size * sizeof(*g->strings);
     check_buffer_used(used, size);
 
-	g->fields = get_next_aligned_area(&buffer, &used);
+	g->fields = get_next_aligned_area(buffer, &used);
 	used += g->fields_size * sizeof(*g->fields);
     check_buffer_used(used, size);
 
-	g->fields_buckets = get_next_aligned_area(&buffer, &used);
+	g->fields_buckets = get_next_aligned_area(buffer, &used);
 	used += g->fields_size * sizeof(*g->fields_buckets);
     check_buffer_used(used, size);
 
-	g->fields_chains = get_next_aligned_area(&buffer, &used);
+	g->fields_chains = get_next_aligned_area(buffer, &used);
 	used += g->fields_size * sizeof(*g->fields_chains);
     check_buffer_used(used, size);
 }
@@ -535,16 +534,6 @@ enum json_status json(char *json_file_path, struct json_node *returned, void *bu
 	}
 
 	g = buffer;
-
-	if (!g->initialized) {
-		g->initialized = true;
-
-		g->text_size = 1;
-		g->tokens_size = 1;
-		g->nodes_size = 1;
-		g->strings_size = 1;
-		g->fields_size = 1;
-	}
 
 	allocate_arrays(buffer, buffer_size);
 
@@ -558,4 +547,22 @@ enum json_status json(char *json_file_path, struct json_node *returned, void *bu
 	*returned = parse(&token_index);
 
 	return JSON_OK;
+}
+
+bool json_init(void *buffer, size_t buffer_size) {
+	if (buffer_size < sizeof(*g)) {
+		return true;
+	}
+
+	g = buffer;
+
+	g->text_size = 1;
+	g->tokens_size = 1;
+	g->nodes_size = 1;
+	g->strings_size = 1;
+	g->fields_size = 1;
+
+	g->initialized = true;
+
+	return false;
 }

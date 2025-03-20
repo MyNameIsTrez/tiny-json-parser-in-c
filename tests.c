@@ -8,7 +8,7 @@
 static char buffer[420420];
 
 #define OK_PARSE(path, node) {\
-	memset(buffer, 0, sizeof(buffer));\
+	assert(!json_init(buffer, sizeof(buffer)));\
 	enum json_status status;\
     do {\
 		status = json(path, node, buffer, sizeof(buffer));\
@@ -26,7 +26,7 @@ static char buffer[420420];
 }
 
 #define ERROR_PARSE(path, error) {\
-	memset(buffer, 0, sizeof(buffer));\
+	assert(!json_init(buffer, sizeof(buffer)));\
 	struct json_node node;\
     enum json_status status;\
     do {\
