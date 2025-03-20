@@ -470,7 +470,7 @@ static void read_text(char *json_file_path) {
 	json_assert(err == 0, JSON_ERROR_FILE_READING_ERROR);
 }
 
-static void check_buffer_size(size_t size, size_t capacity) {
+static void check_if_over_capacity(size_t size, size_t capacity) {
     if (size > capacity) {
         json_error(JSON_ERROR_OUT_OF_MEMORY);
     }
@@ -494,35 +494,35 @@ static void allocate_arrays(void *buffer, size_t capacity) {
 
 	// Reserve space for the g struct itself in the buffer
 	size += sizeof(*g);
-    check_buffer_size(size, capacity);
+    check_if_over_capacity(size, capacity);
 
 	g->text = get_next_aligned_area(buffer, &size);
 	size += g->text_capacity * sizeof(*g->text);
-    check_buffer_size(size, capacity);
+    check_if_over_capacity(size, capacity);
 
 	g->tokens = get_next_aligned_area(buffer, &size);
 	size += g->tokens_capacity * sizeof(*g->tokens);
-    check_buffer_size(size, capacity);
+    check_if_over_capacity(size, capacity);
 
 	g->nodes = get_next_aligned_area(buffer, &size);
 	size += g->nodes_capacity * sizeof(*g->nodes);
-    check_buffer_size(size, capacity);
+    check_if_over_capacity(size, capacity);
 
 	g->strings = get_next_aligned_area(buffer, &size);
 	size += g->strings_capacity * sizeof(*g->strings);
-    check_buffer_size(size, capacity);
+    check_if_over_capacity(size, capacity);
 
 	g->fields = get_next_aligned_area(buffer, &size);
 	size += g->fields_capacity * sizeof(*g->fields);
-    check_buffer_size(size, capacity);
+    check_if_over_capacity(size, capacity);
 
 	g->fields_buckets = get_next_aligned_area(buffer, &size);
 	size += g->fields_capacity * sizeof(*g->fields_buckets);
-    check_buffer_size(size, capacity);
+    check_if_over_capacity(size, capacity);
 
 	g->fields_chains = get_next_aligned_area(buffer, &size);
 	size += g->fields_capacity * sizeof(*g->fields_chains);
-    check_buffer_size(size, capacity);
+    check_if_over_capacity(size, capacity);
 }
 
 enum json_status json(char *json_file_path, struct json_node *returned, void *buffer, size_t buffer_capacity) {
