@@ -444,16 +444,16 @@ static void read_text(char *json_file_path) {
 }
 
 static void check_if_out_of_memory(size_t size, size_t capacity) {
-    if (size > capacity) {
-        json_error(JSON_OUT_OF_MEMORY);
-    }
+	if (size > capacity) {
+		json_error(JSON_OUT_OF_MEMORY);
+	}
 }
 
 static void *get_next_aligned_area(void *buffer, size_t *size) {
-    // Align size to 16 bytes
-    *size += (16 - (*size % 16)) % 16;
+	// Align size to 16 bytes
+	*size += (16 - (*size % 16)) % 16;
 
-    return (char *)buffer + *size;
+	return (char *)buffer + *size;
 }
 
 static void allocate_arrays(void *buffer, size_t capacity) {
@@ -467,35 +467,35 @@ static void allocate_arrays(void *buffer, size_t capacity) {
 
 	// Reserve space for the g struct itself in the buffer
 	size += sizeof(*g);
-    check_if_out_of_memory(size, capacity);
+	check_if_out_of_memory(size, capacity);
 
 	g->text = get_next_aligned_area(buffer, &size);
 	size += g->text_capacity * sizeof(*g->text);
-    check_if_out_of_memory(size, capacity);
+	check_if_out_of_memory(size, capacity);
 
 	g->tokens = get_next_aligned_area(buffer, &size);
 	size += g->tokens_capacity * sizeof(*g->tokens);
-    check_if_out_of_memory(size, capacity);
+	check_if_out_of_memory(size, capacity);
 
 	g->nodes = get_next_aligned_area(buffer, &size);
 	size += g->nodes_capacity * sizeof(*g->nodes);
-    check_if_out_of_memory(size, capacity);
+	check_if_out_of_memory(size, capacity);
 
 	g->strings = get_next_aligned_area(buffer, &size);
 	size += g->strings_capacity * sizeof(*g->strings);
-    check_if_out_of_memory(size, capacity);
+	check_if_out_of_memory(size, capacity);
 
 	g->fields = get_next_aligned_area(buffer, &size);
 	size += g->fields_capacity * sizeof(*g->fields);
-    check_if_out_of_memory(size, capacity);
+	check_if_out_of_memory(size, capacity);
 
 	g->fields_buckets = get_next_aligned_area(buffer, &size);
 	size += g->fields_capacity * sizeof(*g->fields_buckets);
-    check_if_out_of_memory(size, capacity);
+	check_if_out_of_memory(size, capacity);
 
 	g->fields_chains = get_next_aligned_area(buffer, &size);
 	size += g->fields_capacity * sizeof(*g->fields_chains);
-    check_if_out_of_memory(size, capacity);
+	check_if_out_of_memory(size, capacity);
 }
 
 enum json_status json(char *json_file_path, struct json_node *returned, void *buffer, size_t buffer_capacity) {

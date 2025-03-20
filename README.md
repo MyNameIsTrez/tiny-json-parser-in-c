@@ -8,7 +8,7 @@ I was inspired by null program's [Minimalist C Libraries](https://nullprogram.co
 
 ```c
 int main() {
-    char buffer[420]
+	char buffer[420];
 
 	// If json_init() fails, just increase the starting size
 	assert(!json_init(buffer, sizeof(buffer)));
@@ -29,8 +29,8 @@ Instead of using a fixed size buffer, you can use `realloc()` to keep retrying t
 
 ```c
 int main() {
-    size_t size = 420;
-    void *buffer = malloc(size);
+	size_t size = 420;
+	void *buffer = malloc(size);
 
 	// If json_init() fails, just increase the starting size
 	assert(!json_init(buffer, size));
@@ -38,13 +38,13 @@ int main() {
 	struct json_node node;
 
 	enum json_status status;
-    do {
+	do {
 		status = json("foo.json", &node, buffer, size);
-        if (status == JSON_OUT_OF_MEMORY) {
-            size *= 2;
-            buffer = realloc(buffer, size);
-        }
-    } while (status == JSON_OUT_OF_MEMORY);
+		if (status == JSON_OUT_OF_MEMORY) {
+			size *= 2;
+			buffer = realloc(buffer, size);
+		}
+	} while (status == JSON_OUT_OF_MEMORY);
 
 	// You can now recursively walk the JSON data in the node variable here
 }
