@@ -28,6 +28,7 @@ int json_error_line_number;
 
 char *json_error_messages[] = {
 	[JSON_OK] = "No error",
+	[JSON_OUT_OF_MEMORY] = "Out of memory",
 	[JSON_FAILED_TO_OPEN_FILE] = "Failed to open file",
 	[JSON_FAILED_TO_CLOSE_FILE] = "Failed to close file",
 	[JSON_FILE_EMPTY] = "File is empty",
