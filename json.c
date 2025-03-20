@@ -451,7 +451,7 @@ static void read_text(char *json_file_path) {
 	g->text_used = fread(
 		g->text,
 		sizeof(char),
-		g->text_size, // TODO: I may need to subtract 1, to prevent an off-by-one error? Add a test for this
+		g->text_size,
 		f
 	);
 
@@ -468,8 +468,6 @@ static void read_text(char *json_file_path) {
 	}
 
 	json_assert(err == 0, JSON_ERROR_FILE_READING_ERROR);
-
-	g->text[g->text_used] = '\0'; // TODO: I may need to subtract 1, to prevent an off-by-one error? Add a test for this
 }
 
 static void check_buffer_used(size_t buffer_used, size_t buffer_size) {
