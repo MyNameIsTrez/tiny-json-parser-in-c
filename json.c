@@ -75,7 +75,7 @@ static struct json_node parse_array(size_t *i);
 static void push_node(struct json_node node) {
 	if (g->nodes_size + 1 > g->nodes_capacity) {
 		g->nodes_capacity *= 2;
-		json_error(JSON_OUT_OF_MEMORY);
+		json_error(JSON_RESTART);
 	}
 
 	g->nodes[g->nodes_size++] = node;
@@ -84,7 +84,7 @@ static void push_node(struct json_node node) {
 static void push_field(struct json_field field) {
 	if (g->fields_size + 1 > g->fields_capacity) {
 		g->fields_capacity *= 2;
-		json_error(JSON_OUT_OF_MEMORY);
+		json_error(JSON_RESTART);
 	}
 
 	g->fields[g->fields_size++] = field;
@@ -93,7 +93,7 @@ static void push_field(struct json_field field) {
 static char *push_string(char *slice_start, size_t length) {
 	if (g->strings_size + 1 > g->strings_capacity) {
 		g->strings_capacity *= 2;
-		json_error(JSON_OUT_OF_MEMORY);
+		json_error(JSON_RESTART);
 	}
 
 	char *new_str = g->strings + g->strings_size;
@@ -373,7 +373,7 @@ static struct json_node parse(size_t *i) {
 static void push_token(enum token_type type, size_t offset, size_t length) {
 	if (g->tokens_size + 1 > g->tokens_capacity) {
 		g->tokens_capacity *= 2;
-		json_error(JSON_OUT_OF_MEMORY);
+		json_error(JSON_RESTART);
 	}
 
 	g->tokens[g->tokens_size++] = (struct token){
@@ -437,13 +437,13 @@ static void read_text(char *json_file_path) {
 
 	if (!is_eof) {
 		g->text_capacity *= 2;
-		json_error(JSON_OUT_OF_MEMORY);
+		json_error(JSON_RESTART);
 	}
 
 	json_assert(err == 0, JSON_FILE_READING_ERROR);
 }
 
-static void check_if_over_capacity(size_t size, size_t capacity) {
+static void check_if_out_of_memory(size_t size, size_t capacity) {
     if (size > capacity) {
         json_error(JSON_OUT_OF_MEMORY);
     }
@@ -467,40 +467,40 @@ static void allocate_arrays(void *buffer, size_t capacity) {
 
 	// Reserve space for the g struct itself in the buffer
 	size += sizeof(*g);
-    check_if_over_capacity(size, capacity);
+    check_if_out_of_memory(size, capacity);
 
 	g->text = get_next_aligned_area(buffer, &size);
 	size += g->text_capacity * sizeof(*g->text);
-    check_if_over_capacity(size, capacity);
+    check_if_out_of_memory(size, capacity);
 
 	g->tokens = get_next_aligned_area(buffer, &size);
 	size += g->tokens_capacity * sizeof(*g->tokens);
-    check_if_over_capacity(size, capacity);
+    check_if_out_of_memory(size, capacity);
 
 	g->nodes = get_next_aligned_area(buffer, &size);
 	size += g->nodes_capacity * sizeof(*g->nodes);
-    check_if_over_capacity(size, capacity);
+    check_if_out_of_memory(size, capacity);
 
 	g->strings = get_next_aligned_area(buffer, &size);
 	size += g->strings_capacity * sizeof(*g->strings);
-    check_if_over_capacity(size, capacity);
+    check_if_out_of_memory(size, capacity);
 
 	g->fields = get_next_aligned_area(buffer, &size);
 	size += g->fields_capacity * sizeof(*g->fields);
-    check_if_over_capacity(size, capacity);
+    check_if_out_of_memory(size, capacity);
 
 	g->fields_buckets = get_next_aligned_area(buffer, &size);
 	size += g->fields_capacity * sizeof(*g->fields_buckets);
-    check_if_over_capacity(size, capacity);
+    check_if_out_of_memory(size, capacity);
 
 	g->fields_chains = get_next_aligned_area(buffer, &size);
 	size += g->fields_capacity * sizeof(*g->fields_chains);
-    check_if_over_capacity(size, capacity);
+    check_if_out_of_memory(size, capacity);
 }
 
 enum json_status json(char *json_file_path, struct json_node *returned, void *buffer, size_t buffer_capacity) {
 	enum json_status status = setjmp(error_jmp_buffer);
-	if (status) {
+	if (status && status != JSON_RESTART) {
 		return status;
 	}
 
@@ -542,6 +542,7 @@ char *json_get_error_message(enum json_status status) {
 	static char *messages[] = {
 		[JSON_OK] = "No error",
 		[JSON_OUT_OF_MEMORY] = "Out of memory",
+		[JSON_RESTART] = "Restart",
 		[JSON_FAILED_TO_OPEN_FILE] = "Failed to open file",
 		[JSON_FAILED_TO_CLOSE_FILE] = "Failed to close file",
 		[JSON_FILE_EMPTY] = "File is empty",
