@@ -26,34 +26,6 @@ static jmp_buf error_jmp_buffer;
 
 int json_error_line_number;
 
-char *json_error_messages[] = {
-	[JSON_OK] = "No error",
-	[JSON_OUT_OF_MEMORY] = "Out of memory",
-	[JSON_FAILED_TO_OPEN_FILE] = "Failed to open file",
-	[JSON_FAILED_TO_CLOSE_FILE] = "Failed to close file",
-	[JSON_FILE_EMPTY] = "File is empty",
-	[JSON_FILE_TOO_BIG] = "File is too big",
-	[JSON_FILE_READING_ERROR] = "File reading error",
-	[JSON_UNRECOGNIZED_CHARACTER] = "Unrecognized character",
-	[JSON_UNCLOSED_STRING] = "Unclosed string",
-	[JSON_DUPLICATE_KEY] = "Duplicate key",
-	[JSON_TOO_MANY_CHILD_NODES] = "Too many child nodes",
-	[JSON_MAX_RECURSION_DEPTH_EXCEEDED] = "Max recursion depth exceeded",
-	[JSON_TRAILING_COMMA] = "Trailing comma",
-	[JSON_EXPECTED_ARRAY_CLOSE] = "Expected ']'",
-	[JSON_EXPECTED_OBJECT_CLOSE] = "Expected '}'",
-	[JSON_EXPECTED_COLON] = "Expected colon",
-	[JSON_EXPECTED_VALUE] = "Expected value",
-	[JSON_UNEXPECTED_STRING] = "Unexpected string",
-	[JSON_UNEXPECTED_ARRAY_OPEN] = "Unexpected '['",
-	[JSON_UNEXPECTED_ARRAY_CLOSE] = "Unexpected ']'",
-	[JSON_UNEXPECTED_OBJECT_OPEN] = "Unexpected '{'",
-	[JSON_UNEXPECTED_OBJECT_CLOSE] = "Unexpected '}'",
-	[JSON_UNEXPECTED_COMMA] = "Unexpected ','",
-	[JSON_UNEXPECTED_COLON] = "Unexpected ':'",
-	[JSON_UNEXPECTED_EXTRA_CHARACTER] = "Unexpected extra character",
-};
-
 enum token_type {
 	TOKEN_TYPE_STRING,
 	TOKEN_TYPE_ARRAY_OPEN,
@@ -564,4 +536,35 @@ bool json_init(void *buffer, size_t buffer_capacity) {
 	g->initialized = true;
 
 	return false;
+}
+
+char *json_get_error_message(enum json_status status) {
+	static char *messages[] = {
+		[JSON_OK] = "No error",
+		[JSON_OUT_OF_MEMORY] = "Out of memory",
+		[JSON_FAILED_TO_OPEN_FILE] = "Failed to open file",
+		[JSON_FAILED_TO_CLOSE_FILE] = "Failed to close file",
+		[JSON_FILE_EMPTY] = "File is empty",
+		[JSON_FILE_TOO_BIG] = "File is too big",
+		[JSON_FILE_READING_ERROR] = "File reading error",
+		[JSON_UNRECOGNIZED_CHARACTER] = "Unrecognized character",
+		[JSON_UNCLOSED_STRING] = "Unclosed string",
+		[JSON_DUPLICATE_KEY] = "Duplicate key",
+		[JSON_TOO_MANY_CHILD_NODES] = "Too many child nodes",
+		[JSON_MAX_RECURSION_DEPTH_EXCEEDED] = "Max recursion depth exceeded",
+		[JSON_TRAILING_COMMA] = "Trailing comma",
+		[JSON_EXPECTED_ARRAY_CLOSE] = "Expected ']'",
+		[JSON_EXPECTED_OBJECT_CLOSE] = "Expected '}'",
+		[JSON_EXPECTED_COLON] = "Expected colon",
+		[JSON_EXPECTED_VALUE] = "Expected value",
+		[JSON_UNEXPECTED_STRING] = "Unexpected string",
+		[JSON_UNEXPECTED_ARRAY_OPEN] = "Unexpected '['",
+		[JSON_UNEXPECTED_ARRAY_CLOSE] = "Unexpected ']'",
+		[JSON_UNEXPECTED_OBJECT_OPEN] = "Unexpected '{'",
+		[JSON_UNEXPECTED_OBJECT_CLOSE] = "Unexpected '}'",
+		[JSON_UNEXPECTED_COMMA] = "Unexpected ','",
+		[JSON_UNEXPECTED_COLON] = "Unexpected ':'",
+		[JSON_UNEXPECTED_EXTRA_CHARACTER] = "Unexpected extra character",
+	};
+	return messages[status];
 }
