@@ -1,6 +1,6 @@
 # Tiny allocationless JSON parser in C
 
-This library parses a subset of [JSON](https://en.wikipedia.org/wiki/JSON) in roughly 600 lines of C, where only arrays, objects and strings are handled.
+This library parses a subset of [JSON](https://en.wikipedia.org/wiki/JSON) in 469 lines of C, where only arrays, objects and strings are handled.
 
 I wrote this JSON parser for my tiny programming language called [grug](https://mynameistrez.github.io/2024/02/29/creating-the-perfect-modding-language.html).
 
@@ -65,7 +65,7 @@ The [JSON spec](https://www.json.org/json-en.html) specifies that the other valu
 
 ## The old version that was smaller and simpler
 
-Originally `json.c` was 481 lines long, which you can still view in the branch called [static-arrays](https://github.com/MyNameIsTrez/tiny-allocationless-json-parser-in-c/tree/static-arrays):
+Originally `json.c` was 397 lines of code, which you can still view in the branch called [static-arrays](https://github.com/MyNameIsTrez/tiny-allocationless-json-parser-in-c/tree/static-arrays):
 
 ```c
 int main() {
