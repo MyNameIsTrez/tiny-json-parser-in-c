@@ -92,7 +92,7 @@ gcc json.c tests.c && \
 ./a.out
 ```
 
-and if you want to let the compiler do more checks:
+Run this if you want to let the compiler and runtime perform more checks:
 
 ```bash
 gcc json.c tests.c -Wall -Wextra -Werror -Wpedantic -Wfatal-errors -g -fsanitize=address,undefined && \

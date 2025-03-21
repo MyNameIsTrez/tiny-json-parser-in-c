@@ -193,6 +193,35 @@ static void ok_grug(void) {
 	field++;
 }
 
+static void ok_misaligned_buffer(void) {
+	struct json_node node;
+
+	static struct {
+		char c;
+		char buffer[420420];
+	} misaligned;
+
+	assert(!json_init(misaligned.buffer, sizeof(misaligned.buffer)));
+	enum json_status status;
+	char *path = "./tests_ok/misaligned_buffer.json";
+    do {
+		status = json(path, &node, misaligned.buffer, sizeof(misaligned.buffer));
+    } while (status == JSON_OUT_OF_MEMORY);
+	if (status) {
+		fprintf(
+			stderr,
+			"json.c:%d: %s in %s\n",
+			json_get_error_line_number(),
+			json_get_error_message(status),
+			path
+		);
+		abort();
+	}
+
+	assert(node.type == JSON_NODE_ARRAY);
+	assert(node.array.value_count == 0);
+}
+
 static void ok_object_foo(void) {
 	struct json_node node;
 	OK_PARSE("./tests_ok/object_foo.json", &node);
@@ -400,6 +429,7 @@ static void ok_tests(void) {
 	ok_array();
 	ok_comma_in_string();
 	ok_grug();
+	ok_misaligned_buffer();
 	ok_object_foo();
 	ok_object_wide_doesnt_trigger_max_recursion_depth();
 	ok_object_within_max_recursion_depth();
